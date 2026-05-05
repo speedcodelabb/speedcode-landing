@@ -9,3 +9,5 @@ coverage/
 .env
 
 venv
+unificar.py
+contexto_completo.txt
