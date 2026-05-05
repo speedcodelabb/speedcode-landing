@@ -1,55 +1,37 @@
 import { motion } from 'motion/react';
-import { Cpu, Terminal, Layers } from 'lucide-react';
-
-const values = [
-  {
-    title: 'DESARROLLO ÁGIL',
-    description: 'Entregas rápidas y continuas. Nos adaptamos a los cambios para que tu producto nunca se detenga.',
-    icon: <Cpu className="w-10 h-10 text-cyan-glow" />,
-  },
-  {
-    title: 'ARQUITECTURA ESCALABLE',
-    description: 'Diseñamos sistemas que crecen contigo. Infraestructura sólida preparada para millones de usuarios.',
-    icon: <Layers className="w-10 h-10 text-blue-glow" />,
-  },
-  {
-    title: 'CÓDIGO LIMPIO',
-    description: 'Legibilidad, mantenibilidad y rendimiento extremo. Escribimos código que dura.',
-    icon: <Terminal className="w-10 h-10 text-cyan-glow" />,
-  },
-];
+import { values } from '../data/landing';
 
 export default function Values() {
   return (
-    <section id="features" className="py-24 bg-navy-800/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
-            NUESTRA MISIÓN Y <span className="glow-text">VALORES POSITIVOS</span>
-          </h2>
-          <div className="w-20 h-1 bg-linear-to-r from-blue-glow to-cyan-glow mx-auto" />
-        </div>
+    <section id="valores" className="mt-20 scroll-mt-24">
+      <div className="text-center">
+        <h2 className="font-heading text-3xl font-black uppercase leading-tight md:text-4xl">
+          Nuestra misión y
+          <span className="text-sky-300"> valores positivos</span>
+        </h2>
+        <div className="mx-auto mt-4 h-1 w-28 bg-gradient-to-r from-blue-600 to-sky-300" />
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {values.map((value, index) => (
-            <motion.div
+      <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+        {values.map((value) => {
+          const Icon = value.icon;
+          return (
+            <motion.article
               key={value.title}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.2 }}
-              className="glass-card p-8 hover:bg-white/10 transition-colors group"
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.35 }}
+              className="premium-card border border-sky-300/12 bg-[#071126]/70 p-7"
             >
-              <div className="mb-6 p-4 rounded-2xl bg-white/5 w-fit group-hover:scale-110 transition-transform">
-                {value.icon}
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-sky-300/8">
+                <Icon className="h-7 w-7 text-sky-300" />
               </div>
-              <h3 className="text-xl font-bold mb-3">{value.title}</h3>
-              <p className="text-gray-400 leading-relaxed">
-                {value.description}
-              </p>
-            </motion.div>
-          ))}
-        </div>
+              <h3 className="mt-7 text-lg font-black uppercase text-white">{value.title}</h3>
+              <p className="mt-4 text-sm leading-7 text-slate-300">{value.body}</p>
+            </motion.article>
+          );
+        })}
       </div>
     </section>
   );
