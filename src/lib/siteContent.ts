@@ -1,8 +1,17 @@
 import { supabase, isSupabaseConfigured } from './supabase';
+import type { ServiceIconKey } from './serviceIcons';
 
 export type FaqItem = {
   question: string;
   answer: string;
+};
+
+export type ServiceItem = {
+  id: string;
+  icon: ServiceIconKey;
+  title: string;
+  body: string;
+  proof: string;
 };
 
 export type SiteContent = {
@@ -13,6 +22,7 @@ export type SiteContent = {
   contactPhone: string;
   whatsappNumber: string;
   faqItems: FaqItem[];
+  services: ServiceItem[];
 };
 
 export type PortfolioItem = {
@@ -22,6 +32,7 @@ export type PortfolioItem = {
   metric: string;
   result: string;
   imageUrl: string | null;
+  link: string | null;
   sortOrder: number;
 };
 
@@ -64,6 +75,64 @@ export const defaultSiteContent: SiteContent = {
         'Sí. Entregamos un panel de administración intuitivo para que puedas gestionar textos, imágenes y productos sin depender de nosotros.',
     },
   ],
+  services: [
+    {
+      id: 'automatizacion',
+      icon: 'bot',
+      title: 'Automatización',
+      body: 'Flujos inteligentes para responder clientes potenciales, conectar herramientas y reducir trabajo manual repetitivo.',
+      proof: 'Menos tareas repetidas',
+    },
+    {
+      id: 'desarrollo-web',
+      icon: 'code',
+      title: 'Desarrollo Web',
+      body: 'Páginas de aterrizaje y sitios corporativos con diseño premium, texto claro y velocidad lista para convertir.',
+      proof: 'Base comercial sólida',
+    },
+    {
+      id: 'apps-escritorio',
+      icon: 'desktop',
+      title: 'Apps de Escritorio',
+      body: 'Aplicaciones internas para operaciones, inventario, reportes y procesos que necesitan estabilidad local.',
+      proof: 'Herramientas internas',
+    },
+    {
+      id: 'analisis-datos',
+      icon: 'database',
+      title: 'Análisis de Datos',
+      body: 'Dashboards, métricas y reportes claros para tomar decisiones con información real del negocio.',
+      proof: 'Decisiones medibles',
+    },
+    {
+      id: 'consultoria-tecnologica',
+      icon: 'sparkles',
+      title: 'Consultoría Tecnológica',
+      body: 'Diagnóstico, arquitectura y plan técnico para elegir bien antes de invertir tiempo y presupuesto.',
+      proof: 'Ruta técnica clara',
+    },
+    {
+      id: 'productos-saas',
+      icon: 'rocket',
+      title: 'Productos SaaS',
+      body: 'MVPs y plataformas listas para usuarios, pagos, paneles, roles y crecimiento progresivo.',
+      proof: 'Producto escalable',
+    },
+    {
+      id: 'soporte-mantenimiento',
+      icon: 'support',
+      title: 'Soporte y Mantenimiento',
+      body: 'Mejoras, monitoreo, correcciones y soporte continuo para que tu producto siga funcionando bien.',
+      proof: 'Continuidad operativa',
+    },
+    {
+      id: 'proyecto-medida',
+      icon: 'workflow',
+      title: 'Proyecto a Medida',
+      body: 'Si tu necesidad combina web, datos, automatización o soporte, armamos un alcance específico.',
+      proof: 'Alcance flexible',
+    },
+  ],
 };
 
 export const defaultPortfolioItems: PortfolioItem[] = [
@@ -74,6 +143,7 @@ export const defaultPortfolioItems: PortfolioItem[] = [
     metric: '+38% intención de contacto',
     result: 'Estructura clara para captación de clientes potenciales, texto directo y WhatsApp como canal principal.',
     imageUrl: null,
+    link: null,
     sortOrder: 0,
   },
   {
@@ -83,6 +153,7 @@ export const defaultPortfolioItems: PortfolioItem[] = [
     metric: '-12 h semanales manuales',
     result: 'Automatización de tareas internas, reportes y control de procesos críticos.',
     imageUrl: null,
+    link: null,
     sortOrder: 1,
   },
   {
@@ -92,6 +163,7 @@ export const defaultPortfolioItems: PortfolioItem[] = [
     metric: 'Base lista para escalar',
     result: 'Usuarios, dashboards, permisos, integraciones y arquitectura preparada para crecer.',
     imageUrl: null,
+    link: null,
     sortOrder: 2,
   },
 ];
@@ -105,6 +177,7 @@ function mapContentRow(row: Record<string, unknown>): SiteContent {
     contactPhone: (row.contact_phone as string) || defaultSiteContent.contactPhone,
     whatsappNumber: (row.whatsapp_number as string) || defaultSiteContent.whatsappNumber,
     faqItems: Array.isArray(row.faq_items) && row.faq_items.length > 0 ? (row.faq_items as FaqItem[]) : defaultSiteContent.faqItems,
+    services: Array.isArray(row.services) && row.services.length > 0 ? (row.services as ServiceItem[]) : defaultSiteContent.services,
   };
 }
 
@@ -116,6 +189,7 @@ function mapPortfolioRow(row: Record<string, unknown>): PortfolioItem {
     metric: (row.metric as string) || '',
     result: (row.result as string) || '',
     imageUrl: (row.image_url as string) || null,
+    link: (row.app_url as string) || null,
     sortOrder: (row.sort_order as number) ?? 0,
   };
 }

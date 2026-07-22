@@ -1,16 +1,4 @@
-import {
-  Bot,
-  Code2,
-  Cpu,
-  Database,
-  Headphones,
-  Layers3,
-  MonitorCog,
-  Rocket,
-  Sparkles,
-  Terminal,
-  Workflow,
-} from 'lucide-react';
+import { Cpu, Layers3, Terminal } from 'lucide-react';
 
 export const maxMessageLength = 1600;
 export const maxWhatsappMessageLength = 1200;
@@ -23,65 +11,6 @@ export const serviceNavItems = [
   { label: 'Consultoría tecnológica', href: '#consultoria-tecnologica' },
   { label: 'Productos SaaS', href: '#productos-saas' },
   { label: 'Soporte y Mantenimiento', href: '#soporte-mantenimiento' },
-];
-
-export const services = [
-  {
-    id: 'automatizacion',
-    icon: Bot,
-    title: 'Automatización',
-    body: 'Flujos inteligentes para responder clientes potenciales, conectar herramientas y reducir trabajo manual repetitivo.',
-    proof: 'Menos tareas repetidas',
-  },
-  {
-    id: 'desarrollo-web',
-    icon: Code2,
-    title: 'Desarrollo Web',
-    body: 'Páginas de aterrizaje y sitios corporativos con diseño premium, texto claro y velocidad lista para convertir.',
-    proof: 'Base comercial sólida',
-  },
-  {
-    id: 'apps-escritorio',
-    icon: MonitorCog,
-    title: 'Apps de Escritorio',
-    body: 'Aplicaciones internas para operaciones, inventario, reportes y procesos que necesitan estabilidad local.',
-    proof: 'Herramientas internas',
-  },
-  {
-    id: 'analisis-datos',
-    icon: Database,
-    title: 'Análisis de Datos',
-    body: 'Dashboards, métricas y reportes claros para tomar decisiones con información real del negocio.',
-    proof: 'Decisiones medibles',
-  },
-  {
-    id: 'consultoria-tecnologica',
-    icon: Sparkles,
-    title: 'Consultoría Tecnológica',
-    body: 'Diagnóstico, arquitectura y plan técnico para elegir bien antes de invertir tiempo y presupuesto.',
-    proof: 'Ruta técnica clara',
-  },
-  {
-    id: 'productos-saas',
-    icon: Rocket,
-    title: 'Productos SaaS',
-    body: 'MVPs y plataformas listas para usuarios, pagos, paneles, roles y crecimiento progresivo.',
-    proof: 'Producto escalable',
-  },
-  {
-    id: 'soporte-mantenimiento',
-    icon: Headphones,
-    title: 'Soporte y Mantenimiento',
-    body: 'Mejoras, monitoreo, correcciones y soporte continuo para que tu producto siga funcionando bien.',
-    proof: 'Continuidad operativa',
-  },
-  {
-    id: 'proyecto-medida',
-    icon: Workflow,
-    title: 'Proyecto a Medida',
-    body: 'Si tu necesidad combina web, datos, automatización o soporte, armamos un alcance específico.',
-    proof: 'Alcance flexible',
-  },
 ];
 
 export const values = [

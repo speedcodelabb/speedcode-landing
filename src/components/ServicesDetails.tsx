@@ -1,7 +1,10 @@
 import { motion } from 'motion/react';
-import { services } from '../data/landing';
+import { useSiteContent } from '../context/SiteContentContext';
+import { getServiceIcon } from '../lib/serviceIcons';
 
 export default function ServicesDetails() {
+  const { content } = useSiteContent();
+
   return (
     <section id="servicios" className="scroll-mt-24">
       <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
@@ -20,8 +23,8 @@ export default function ServicesDetails() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
-        {services.map((service) => {
-          const Icon = service.icon;
+        {content.services.map((service) => {
+          const Icon = getServiceIcon(service.icon);
           return (
             <motion.article
               initial={{ opacity: 0, y: 18 }}
@@ -29,7 +32,7 @@ export default function ServicesDetails() {
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.35 }}
               id={service.id}
-              key={service.title}
+              key={service.id}
               className="premium-card group relative flex min-h-[320px] scroll-mt-28 flex-col overflow-hidden border border-sky-300/12 bg-[#071126]/70 p-7 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-sky-300/35 hover:bg-[#0a1730]/90"
             >
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent opacity-0 transition group-hover:opacity-100" />

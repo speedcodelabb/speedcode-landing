@@ -19,7 +19,7 @@ export default function AdminLayout() {
       )}
 
       <div className="mx-auto flex max-w-[1240px] flex-col gap-6 px-5 py-8 md:flex-row md:px-8">
-        <aside className="premium-card h-fit rounded-[24px] border border-sky-300/14 bg-[#071126]/80 p-4 md:w-56 md:shrink-0">
+        <aside className="h-fit rounded-[24px] border border-slate-800 bg-[#0b1626] p-4 md:w-56 md:shrink-0">
           <p className="px-2 text-xs font-black uppercase tracking-[0.2em] text-sky-300">Administración</p>
           <nav className="mt-4 grid gap-1">
             {navItems.map(({ to, label, icon: Icon, end }) => (
