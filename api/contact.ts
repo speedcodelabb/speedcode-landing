@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { MongoClient } from 'mongodb';
+import { createClient } from '@supabase/supabase-js';
 
-const uri = process.env.MONGODB_URI as string;
-let client: MongoClient | null = null;
+const supabaseUrl = process.env.VITE_SUPABASE_URL as string;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
 
 const ALLOWED_ORIGINS = [
   'https://speedcodelab.com',
@@ -35,14 +35,6 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-async function getClient(): Promise<MongoClient> {
-  if (!client) {
-    client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
-    await client.connect();
-  }
-  return client;
-}
-
 const ALLOWED_TIPOS = [
   'Desarrollo Web / SaaS',
   'App de Escritorio',
@@ -62,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
-  if (!uri) return res.status(500).json({ error: 'Configuración interna incompleta' });
+  if (!supabaseUrl || !serviceRoleKey) return res.status(500).json({ error: 'Configuración interna incompleta' });
 
   // Rate limiting
   const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || 'unknown';
@@ -91,21 +83,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const dbClient = await getClient();
-    const db = dbClient.db('speedcodelab');
-    await db.collection('contactos').insertOne({
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const { error } = await supabase.from('contactos').insert({
       nombre,
       email,
-      tipoProyecto: tipoProyecto || 'No especificado',
+      tipo_proyecto: tipoProyecto || 'No especificado',
       mensaje,
       ip,
-      fechaEnvio: new Date(),
-      leido: false,
     });
+
+    if (error) throw error;
     return res.status(200).json({ success: true });
   } catch (error) {
-    client = null;
-    console.error('Error MongoDB:', error);
+    console.error('Error Supabase:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 }

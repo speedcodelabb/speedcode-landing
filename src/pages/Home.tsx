@@ -9,11 +9,17 @@ import Portfolio from '../components/Portfolio';
 import ServicesDetails from '../components/ServicesDetails';
 import Values from '../components/Values';
 import { getWhatsappUrl } from '../data/landing';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export default function Home() {
+  const { content } = useSiteContent();
   const defaultWhatsappUrl = useMemo(
-    () => getWhatsappUrl('Hola Speedcode Lab, quiero hablar sobre un proyecto web y recibir una propuesta.'),
-    [],
+    () =>
+      getWhatsappUrl(
+        content.whatsappNumber,
+        'Hola Speedcode Lab, quiero hablar sobre un proyecto web y recibir una propuesta.',
+      ),
+    [content.whatsappNumber],
   );
 
   return (

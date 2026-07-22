@@ -12,9 +12,6 @@ import {
   Workflow,
 } from 'lucide-react';
 
-export const whatsappNumber = '595994381638';
-export const whatsappBase = `https://wa.me/${whatsappNumber}`;
-export const contactEmail = 'soluciones@speedcodelab.com';
 export const maxMessageLength = 1600;
 export const maxWhatsappMessageLength = 1200;
 
@@ -112,27 +109,6 @@ export const processSteps = [
   'Lanzamiento, medición y mejoras continuas',
 ];
 
-export const portfolioItems = [
-  {
-    name: 'Página comercial',
-    industry: 'Servicios B2B',
-    metric: '+38% intención de contacto',
-    result: 'Estructura clara para captación de clientes potenciales, texto directo y WhatsApp como canal principal.',
-  },
-  {
-    name: 'Panel operativo',
-    industry: 'Operaciones internas',
-    metric: '-12 h semanales manuales',
-    result: 'Automatización de tareas internas, reportes y control de procesos críticos.',
-  },
-  {
-    name: 'Producto SaaS',
-    industry: 'Plataforma digital',
-    metric: 'Base lista para escalar',
-    result: 'Usuarios, dashboards, permisos, integraciones y arquitectura preparada para crecer.',
-  },
-];
-
 export const heroStats = [
   { value: '1-2 sem', label: 'primer avance visible' },
   { value: 'Web rápida', label: 'carga y navegación fluidas' },
@@ -145,36 +121,8 @@ export const nextSteps = [
   'Te enviamos una propuesta clara con tiempos y entregables.',
 ];
 
-export const faqItems = [
-  {
-    question: '¿Cuánto cuesta desarrollar un sitio web?',
-    answer:
-      'El costo varía según la complejidad y las funcionalidades requeridas. Realizamos presupuestos a medida tras una fase de consultoría inicial para asegurar que pagas solo por lo que necesitas.',
-  },
-  {
-    question: '¿Cuánto tiempo toma tener mi web lista?',
-    answer:
-      'Una landing page puede estar lista en 1-2 semanas, mientras que un sistema complejo o un e-commerce puede tomar de 4 a 8 semanas dependiendo de las integraciones.',
-  },
-  {
-    question: '¿El sitio va a funcionar bien en celulares?',
-    answer:
-      'Absolutamente. Todos nuestros desarrollos son Mobile First por defecto, garantizando una experiencia perfecta en cualquier dispositivo.',
-  },
-  {
-    question: '¿Incluyen hosting y dominio?',
-    answer:
-      'Te asesoramos en la compra del dominio y configuramos el hosting más eficiente, usualmente Vercel o AWS para máxima velocidad. El costo del servicio de terceros corre por cuenta del cliente.',
-  },
-  {
-    question: '¿Puedo actualizar el contenido después?',
-    answer:
-      'Sí. Entregamos un panel de administración intuitivo para que puedas gestionar textos, imágenes y productos sin depender de nosotros.',
-  },
-];
-
-export function getWhatsappUrl(message: string) {
-  return `${whatsappBase}?text=${encodeURIComponent(message)}`;
+export function getWhatsappUrl(whatsappNumber: string, message: string) {
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
 
 export function truncateForWhatsapp(message: string) {

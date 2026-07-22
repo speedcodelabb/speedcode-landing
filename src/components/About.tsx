@@ -2,8 +2,12 @@ import { motion } from 'motion/react';
 import { CheckCircle2 } from 'lucide-react';
 import logoMark from '../assets/speedcode-logo-mark.png';
 import { processSteps } from '../data/landing';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export default function About() {
+  const { content } = useSiteContent();
+  const aboutParagraphs = content.aboutText.split('\n\n');
+
   return (
     <section id="laboratorio" className="mt-20 grid scroll-mt-24 grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
       <motion.article
@@ -19,16 +23,18 @@ export default function About() {
             Sobre nuestro
             <span className="block text-sky-300">laboratorio</span>
           </h2>
-          <p className="mt-7 max-w-3xl text-base leading-8 text-white">
-            SPEEDCODE Lab nació de la necesidad de transformar ideas complejas en realidades técnicas tangibles con
-            una velocidad sin precedentes. No somos solo una agencia: somos un equipo de ingenieros obsesionados con
-            la optimización.
-          </p>
-          <p className="mt-5 max-w-3xl text-sm leading-7 text-slate-300">
-            Nuestro enfoque combina la agilidad de los últimos frameworks de desarrollo con la robustez de
-            arquitecturas de nivel empresarial. En nuestro laboratorio, cada línea de código se somete a rigurosas
-            pruebas de rendimiento y escalabilidad.
-          </p>
+          {aboutParagraphs.map((paragraph, index) => (
+            <p
+              key={index}
+              className={
+                index === 0
+                  ? 'mt-7 max-w-3xl text-base leading-8 text-white'
+                  : 'mt-5 max-w-3xl text-sm leading-7 text-slate-300'
+              }
+            >
+              {paragraph}
+            </p>
+          ))}
         </div>
       </motion.article>
 

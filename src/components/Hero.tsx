@@ -2,8 +2,11 @@ import { motion } from 'motion/react';
 import { ArrowUpRight } from 'lucide-react';
 import PremiumAnimatedBackground from './3d/PremiumAnimatedBackground';
 import { heroStats } from '../data/landing';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export default function Hero() {
+  const { content } = useSiteContent();
+
   return (
     <section id="inicio" className="relative isolate overflow-hidden bg-[#020614] after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-[1] after:h-32 after:bg-gradient-to-b after:from-transparent after:to-[#020614]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(14,165,233,0.18),transparent_34%),linear-gradient(180deg,#020614_0%,#050b1f_100%)]" />
@@ -26,10 +29,8 @@ export default function Hero() {
                 transition={{ delay: 0.1 }}
                 className="font-heading mt-5 max-w-6xl text-[clamp(2.15rem,9.4vw,3.7rem)] font-black uppercase leading-[0.98] tracking-[-0.04em] text-white md:mt-6 md:text-5xl md:tracking-normal lg:text-6xl xl:text-[4rem]"
               >
-                Soluciones de software
-                <br />
                 <span className="bg-gradient-to-r from-sky-100 via-sky-300 to-blue-500 bg-clip-text text-transparent">
-                  a la velocidad del código
+                  {content.heroTitle}
                 </span>
               </motion.h1>
               <motion.p
@@ -38,8 +39,7 @@ export default function Hero() {
                 transition={{ delay: 0.2 }}
                 className="mt-5 max-w-[34rem] text-[15px] leading-7 text-slate-200 md:mt-6 md:max-w-3xl md:text-lg md:leading-relaxed"
               >
-                Acelera tu visión digital con un equipo de desarrollo enfocado en el laboratorio. Expertos en
-                agilidad, escalabilidad y arquitecturas de alto rendimiento.
+                {content.heroSubtitle}
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 16 }}

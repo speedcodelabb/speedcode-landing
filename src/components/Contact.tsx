@@ -1,19 +1,15 @@
 import { type FormEvent, useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, MessageCircle, Phone, Send } from 'lucide-react';
-import {
-  contactEmail,
-  getWhatsappUrl,
-  maxMessageLength,
-  nextSteps,
-  truncateForWhatsapp,
-} from '../data/landing';
+import { getWhatsappUrl, maxMessageLength, nextSteps, truncateForWhatsapp } from '../data/landing';
+import { useSiteContent } from '../context/SiteContentContext';
 
 type ContactProps = {
   defaultWhatsappUrl: string;
 };
 
 export default function Contact({ defaultWhatsappUrl }: ContactProps) {
+  const { content } = useSiteContent();
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   async function handleContactSubmit(event: FormEvent<HTMLFormElement>) {
@@ -27,7 +23,11 @@ export default function Contact({ defaultWhatsappUrl }: ContactProps) {
     const message = String(form.get('message') || 'Quiero conversar sobre mi proyecto.').slice(0, maxMessageLength);
     const contactMessage = `Hola Speedcode Lab. Soy ${name}. Email: ${email}. Tipo de proyecto: ${projectType}. Mensaje: ${message}`;
 
-    window.open(getWhatsappUrl(truncateForWhatsapp(contactMessage)), '_blank', 'noopener,noreferrer');
+    window.open(
+      getWhatsappUrl(content.whatsappNumber, truncateForWhatsapp(contactMessage)),
+      '_blank',
+      'noopener,noreferrer',
+    );
 
     form.set('Nombre', name);
     form.set('Email', email);
@@ -38,7 +38,7 @@ export default function Contact({ defaultWhatsappUrl }: ContactProps) {
     form.set('_captcha', 'false');
 
     try {
-      const response = await fetch(`https://formsubmit.co/ajax/${contactEmail}`, {
+      const response = await fetch(`https://formsubmit.co/ajax/${content.contactEmail}`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -54,7 +54,7 @@ export default function Contact({ defaultWhatsappUrl }: ContactProps) {
       event.currentTarget.reset();
     } catch {
       setFormStatus('error');
-      window.location.href = `mailto:${contactEmail}?subject=${encodeURIComponent(
+      window.location.href = `mailto:${content.contactEmail}?subject=${encodeURIComponent(
         `Nuevo contacto web: ${projectType}`,
       )}&body=${encodeURIComponent(
         `Nombre: ${name}\nEmail: ${email}\nTipo de proyecto: ${projectType}\n\nMensaje:\n${message}`,
@@ -91,13 +91,13 @@ export default function Contact({ defaultWhatsappUrl }: ContactProps) {
             <div className="rounded-[26px] border border-sky-300/12 bg-[#041022]/70 p-5 backdrop-blur">
               <p className="text-sm font-black uppercase text-white">Canales directos</p>
               <div className="mt-5 grid gap-3 text-sm text-slate-200">
-                <a href="tel:+595994381638" className="flex min-h-12 items-center gap-3 rounded-2xl border border-sky-300/10 bg-sky-300/5 px-4 transition hover:border-sky-300/35 hover:text-sky-300">
+                <a href={`tel:+${content.whatsappNumber}`} className="flex min-h-12 items-center gap-3 rounded-2xl border border-sky-300/10 bg-sky-300/5 px-4 transition hover:border-sky-300/35 hover:text-sky-300">
                   <Phone className="h-4 w-4 text-sky-300" />
-                  0994 381 638
+                  {content.contactPhone}
                 </a>
-                <a href={`mailto:${contactEmail}`} className="flex min-h-12 min-w-0 items-center gap-3 rounded-2xl border border-sky-300/10 bg-sky-300/5 px-4 transition hover:border-sky-300/35 hover:text-sky-300">
+                <a href={`mailto:${content.contactEmail}`} className="flex min-h-12 min-w-0 items-center gap-3 rounded-2xl border border-sky-300/10 bg-sky-300/5 px-4 transition hover:border-sky-300/35 hover:text-sky-300">
                   <Mail className="h-4 w-4 text-sky-300" />
-                  <span className="min-w-0 break-all">{contactEmail}</span>
+                  <span className="min-w-0 break-all">{content.contactEmail}</span>
                 </a>
                 <a
                   href={defaultWhatsappUrl}

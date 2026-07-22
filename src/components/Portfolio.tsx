@@ -1,12 +1,14 @@
 import { motion } from 'motion/react';
 import { MessageCircle } from 'lucide-react';
-import { portfolioItems } from '../data/landing';
+import { useSiteContent } from '../context/SiteContentContext';
 
 type PortfolioProps = {
   defaultWhatsappUrl: string;
 };
 
 export default function Portfolio({ defaultWhatsappUrl }: PortfolioProps) {
+  const { portfolioItems } = useSiteContent();
+
   return (
     <section id="portafolio" className="mt-24 scroll-mt-24">
       <div className="mb-9 flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -33,13 +35,20 @@ export default function Portfolio({ defaultWhatsappUrl }: PortfolioProps) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {portfolioItems.map((item, index) => (
           <motion.article
-            key={item.name}
+            key={item.id}
             initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 0.35, delay: index * 0.05 }}
             className="premium-card relative overflow-hidden border border-sky-300/12 bg-[#071126]/70 p-7 transition duration-300 hover:-translate-y-1 hover:border-sky-300/35"
           >
+            {item.imageUrl && (
+              <img
+                src={item.imageUrl}
+                alt={item.name}
+                className="relative -mx-7 -mt-7 mb-6 h-40 w-[calc(100%+3.5rem)] object-cover"
+              />
+            )}
             <div className="absolute right-5 top-5 text-6xl font-black text-sky-300/5">
               {String(index + 1).padStart(2, '0')}
             </div>

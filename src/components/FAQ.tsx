@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Minus, Plus } from 'lucide-react';
-import { faqItems } from '../data/landing';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export default function FAQ() {
+  const { content } = useSiteContent();
   const [openFaq, setOpenFaq] = useState(0);
 
   return (
@@ -13,7 +14,7 @@ export default function FAQ() {
       </h2>
 
       <div className="mt-12 space-y-3">
-        {faqItems.map((item, index) => {
+        {content.faqItems.map((item, index) => {
           const isOpen = openFaq === index;
 
           return (
