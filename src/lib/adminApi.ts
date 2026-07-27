@@ -15,7 +15,6 @@ export async function updateSiteContent(current: SiteContent, patch: Partial<Sit
         contact_phone: merged.contactPhone,
         whatsapp_number: merged.whatsappNumber,
         faq_items: merged.faqItems,
-        services: merged.services,
         updated_at: new Date().toISOString(),
       })
       .eq('id', 1);
@@ -36,7 +35,6 @@ export async function createPortfolioItem(
         metric: item.metric,
         result: item.result,
         image_url: item.imageUrl,
-        app_url: item.link,
         sort_order: item.sortOrder,
       })
       .select()
@@ -50,7 +48,6 @@ export async function createPortfolioItem(
         metric: data.metric,
         result: data.result,
         imageUrl: data.image_url,
-        link: data.app_url,
         sortOrder: data.sort_order,
       };
     }
@@ -69,7 +66,6 @@ export async function updatePortfolioItem(item: PortfolioItem): Promise<Portfoli
         metric: item.metric,
         result: item.result,
         image_url: item.imageUrl,
-        app_url: item.link,
         sort_order: item.sortOrder,
       })
       .eq('id', item.id);

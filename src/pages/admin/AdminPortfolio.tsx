@@ -1,17 +1,14 @@
 import { type FormEvent, useState } from 'react';
-import { ImagePlus, Link2, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
+import { ImagePlus, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { useSiteContent } from '../../context/SiteContentContext';
 import { createPortfolioItem, deletePortfolioItem, updatePortfolioItem, uploadPortfolioImage } from '../../lib/adminApi';
 import type { PortfolioItem } from '../../lib/siteContent';
 
-const cardClass = 'rounded-[26px] border border-slate-800 bg-[#0b1626] p-6';
-const cardClassCompact = 'rounded-[26px] border border-slate-800 bg-[#0b1626] p-5';
-
 const inputClass =
-  'mt-2 h-11 w-full min-w-0 rounded-xl border border-slate-800 bg-[#030918] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15';
+  'mt-2 h-11 w-full min-w-0 rounded-xl border border-sky-300/14 bg-[#030918] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15';
 
 const textareaClass =
-  'mt-2 min-h-20 w-full min-w-0 resize-none rounded-xl border border-slate-800 bg-[#030918] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15';
+  'mt-2 min-h-20 w-full min-w-0 resize-none rounded-xl border border-sky-300/14 bg-[#030918] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15';
 
 type ItemFormState = {
   name: string;
@@ -20,18 +17,9 @@ type ItemFormState = {
   result: string;
   file: File | null;
   imageUrl: string | null;
-  link: string;
 };
 
-const emptyForm: ItemFormState = {
-  name: '',
-  industry: '',
-  metric: '',
-  result: '',
-  file: null,
-  imageUrl: null,
-  link: '',
-};
+const emptyForm: ItemFormState = { name: '', industry: '', metric: '', result: '', file: null, imageUrl: null };
 
 function ItemFields({
   form,
@@ -63,16 +51,6 @@ function ItemFields({
           className="mt-2 block w-full text-xs text-slate-400 file:mr-3 file:rounded-full file:border-0 file:bg-sky-300/12 file:px-3 file:py-2 file:text-xs file:font-bold file:text-sky-100"
         />
       </label>
-      <label className="text-xs font-semibold text-slate-300">
-        Link de la app / proyecto (opcional)
-        <input
-          type="url"
-          value={form.link}
-          onChange={(e) => onChange({ link: e.target.value })}
-          placeholder="https://..."
-          className={inputClass}
-        />
-      </label>
       <label className="text-xs font-semibold text-slate-300 md:col-span-2">
         Resultado / descripción
         <textarea value={form.result} onChange={(e) => onChange({ result: e.target.value })} className={textareaClass} />
@@ -101,7 +79,6 @@ export default function AdminPortfolio() {
       metric: newForm.metric,
       result: newForm.result,
       imageUrl,
-      link: newForm.link.trim() || null,
       sortOrder: portfolioItems.length,
     });
 
@@ -119,7 +96,6 @@ export default function AdminPortfolio() {
       result: item.result,
       file: null,
       imageUrl: item.imageUrl,
-      link: item.link ?? '',
     });
   }
 
@@ -134,7 +110,6 @@ export default function AdminPortfolio() {
       metric: editForm.metric,
       result: editForm.result,
       imageUrl,
-      link: editForm.link.trim() || null,
     });
 
     setPortfolioItems(portfolioItems.map((existing) => (existing.id === item.id ? updated : existing)));
@@ -154,7 +129,7 @@ export default function AdminPortfolio() {
         <p className="mt-1 text-sm text-slate-400">Agregá, editá o borrá los proyectos que se muestran en la web.</p>
       </div>
 
-      <form onSubmit={handleCreate} className={cardClass}>
+      <form onSubmit={handleCreate} className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-6">
         <p className="flex items-center gap-2 text-xs font-black uppercase text-sky-300">
           <ImagePlus className="h-4 w-4" />
           Nuevo proyecto
@@ -174,7 +149,7 @@ export default function AdminPortfolio() {
 
       <div className="grid gap-4 md:grid-cols-2">
         {portfolioItems.map((item) => (
-          <div key={item.id} className={cardClassCompact}>
+          <div key={item.id} className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-5">
             {editingId === item.id ? (
               <div className="grid gap-3">
                 <ItemFields form={editForm} onChange={(patch) => setEditForm((f) => ({ ...f, ...patch }))} />
@@ -211,17 +186,6 @@ export default function AdminPortfolio() {
                 <h3 className="mt-2 text-lg font-black uppercase text-white">{item.name || 'Sin nombre'}</h3>
                 <p className="mt-2 text-sm font-black text-white">{item.metric}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-300">{item.result}</p>
-                {item.link && (
-                  <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-sky-300 hover:text-sky-200"
-                  >
-                    <Link2 className="h-3.5 w-3.5" />
-                    {item.link}
-                  </a>
-                )}
 
                 <div className="mt-4 flex gap-2">
                   <button

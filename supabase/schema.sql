@@ -15,7 +15,6 @@ create table if not exists public.site_content (
   contact_phone text not null default '',
   whatsapp_number text not null default '',
   faq_items jsonb not null default '[]'::jsonb,
-  services jsonb not null default '[]'::jsonb,
   updated_at timestamptz not null default now(),
   constraint site_content_singleton check (id = 1)
 );
@@ -47,7 +46,6 @@ create table if not exists public.portfolio_items (
   metric text not null default '',
   result text not null default '',
   image_url text,
-  app_url text,
   sort_order integer not null default 0,
   created_at timestamptz not null default now()
 );

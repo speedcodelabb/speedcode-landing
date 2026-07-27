@@ -26,7 +26,7 @@ export default function AdminLogin() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#020614] px-5 py-16 text-white">
-      <div className="w-full max-w-sm rounded-[26px] border border-slate-800 bg-[#0b1626] p-7">
+      <div className="premium-card w-full max-w-sm rounded-[26px] border border-sky-300/14 bg-[#071126]/88 p-7 shadow-[0_34px_120px_rgba(0,0,0,0.42)]">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-300/12 text-sky-200">
             <Lock className="h-5 w-5" />
@@ -54,7 +54,7 @@ export default function AdminLogin() {
               onChange={(event) => setEmail(event.target.value)}
               autoComplete="username"
               placeholder="admin@speedcodelab.com"
-              className="mt-2 h-12 w-full rounded-2xl border border-slate-800 bg-[#030918] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15"
+              className="mt-2 h-12 w-full rounded-2xl border border-sky-300/14 bg-[#030918] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15"
             />
           </label>
 
@@ -67,7 +67,7 @@ export default function AdminLogin() {
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
               placeholder="••••••••"
-              className="mt-2 h-12 w-full rounded-2xl border border-slate-800 bg-[#030918] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15"
+              className="mt-2 h-12 w-full rounded-2xl border border-sky-300/14 bg-[#030918] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15"
             />
           </label>
 

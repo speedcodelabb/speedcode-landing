@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ExternalLink, MessageCircle } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { useSiteContent } from '../context/SiteContentContext';
 
 type PortfolioProps = {
@@ -56,18 +56,6 @@ export default function Portfolio({ defaultWhatsappUrl }: PortfolioProps) {
             <h3 className="relative mt-5 text-2xl font-black uppercase leading-tight text-white">{item.name}</h3>
             <p className="relative mt-5 text-3xl font-black tracking-tight text-white">{item.metric}</p>
             <p className="relative mt-4 text-sm leading-7 text-slate-300">{item.result}</p>
-
-            {item.link && (
-              <a
-                href={item.link}
-                target="_blank"
-                rel="noreferrer"
-                className="relative mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-sky-300 transition hover:text-sky-200"
-              >
-                Ver proyecto
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            )}
           </motion.article>
         ))}
       </div>
