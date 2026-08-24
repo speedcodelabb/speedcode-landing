@@ -1,62 +1,142 @@
-import { useEffect, useState } from 'react';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
-
-const DEMO_SESSION_KEY = 'speedcode-admin-demo-session';
+import {
+  createContext,
+  createElement,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { isSupabaseConfigured, supabase } from "../lib/supabase";
 
 type AuthState = {
   isAuthenticated: boolean;
+  isAdmin: boolean;
   loading: boolean;
-  isDemoMode: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  configured: boolean;
+  error: string | null;
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 };
 
-export function useAuth(): AuthState {
+const AuthContext = createContext<AuthState | null>(null);
+
+async function checkAdmin(): Promise<boolean> {
+  if (!supabase) return false;
+  const { data, error } = await supabase.rpc("is_admin");
+  if (error) throw error;
+  return data === true;
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
-      setIsAuthenticated(sessionStorage.getItem(DEMO_SESSION_KEY) === '1');
+      setError("El panel no está configurado para este entorno.");
       setLoading(false);
       return;
     }
 
-    supabase.auth.getSession().then(({ data }) => {
-      setIsAuthenticated(Boolean(data.session));
-      setLoading(false);
-    });
+    let active = true;
+    const resolveSession = async () => {
+      try {
+        const { data, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        const authenticated = Boolean(data.session);
+        const admin = authenticated ? await checkAdmin() : false;
+        if (active) {
+          setIsAuthenticated(authenticated);
+          setIsAdmin(admin);
+          setError(
+            authenticated && !admin
+              ? "La cuenta no tiene permisos administrativos."
+              : null,
+          );
+        }
+      } catch (caught) {
+        if (active)
+          setError(
+            caught instanceof Error
+              ? caught.message
+              : "No se pudo validar la sesión.",
+          );
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(Boolean(session));
+    void resolveSession();
+    const { data: subscription } = supabase.auth.onAuthStateChange(() => {
+      void resolveSession();
     });
-
-    return () => subscription.subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
   }, []);
 
   async function signIn(email: string, password: string) {
-    if (!isSupabaseConfigured || !supabase) {
-      if (!email.trim() || !password.trim()) {
-        return { error: 'Ingresá un email y una contraseña (modo demo local, cualquier valor sirve).' };
+    if (!supabase || !isSupabaseConfigured)
+      return { error: "Supabase no está configurado." };
+    setLoading(true);
+    setError(null);
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (signInError) return { error: signInError.message };
+      if (!(await checkAdmin())) {
+        await supabase.auth.signOut();
+        return {
+          error: "La cuenta no está autorizada para administrar este sitio.",
+        };
       }
-      sessionStorage.setItem(DEMO_SESSION_KEY, '1');
       setIsAuthenticated(true);
+      setIsAdmin(true);
       return { error: null };
+    } catch (caught) {
+      return {
+        error:
+          caught instanceof Error
+            ? caught.message
+            : "No se pudo iniciar sesión.",
+      };
+    } finally {
+      setLoading(false);
     }
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
-    return { error: null };
   }
 
   async function signOut() {
-    if (!isSupabaseConfigured || !supabase) {
-      sessionStorage.removeItem(DEMO_SESSION_KEY);
-      setIsAuthenticated(false);
-      return;
-    }
-    await supabase.auth.signOut();
+    if (supabase) await supabase.auth.signOut();
+    setIsAuthenticated(false);
+    setIsAdmin(false);
   }
 
-  return { isAuthenticated, loading, isDemoMode: !isSupabaseConfigured, signIn, signOut };
+  const value = useMemo<AuthState>(
+    () => ({
+      isAuthenticated,
+      isAdmin,
+      loading,
+      configured: isSupabaseConfigured,
+      error,
+      signIn,
+      signOut,
+    }),
+    [isAuthenticated, isAdmin, loading, error],
+  );
+  return createElement(AuthContext.Provider, { value }, children);
+}
+
+export function useAuth(): AuthState {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth debe usarse dentro de AuthProvider");
+  return context;
 }

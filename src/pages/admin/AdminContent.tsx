@@ -1,161 +1,403 @@
-import { type FormEvent, useState } from 'react';
-import { Plus, Save, Trash2 } from 'lucide-react';
-import { useSiteContent } from '../../context/SiteContentContext';
-import { updateSiteContent } from '../../lib/adminApi';
-import type { FaqItem } from '../../lib/siteContent';
+import {
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  Plus,
+  RefreshCw,
+  Save,
+  Send,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import { useAdminDraft } from "../../context/AdminDraftContext";
+import { SiteContentProvider } from "../../context/SiteContentContext";
+import {
+  defaultSiteDocument,
+  iconKeySchema,
+  siteDocumentSchema,
+  type SiteDocument,
+} from "../../lib/siteContent";
+import Home from "../Home";
 
-const inputClass =
-  'mt-2 h-12 w-full min-w-0 rounded-2xl border border-sky-300/14 bg-[#030918] px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15';
+const labels: Record<string, string> = {
+  navigation: "Navegación",
+  hero: "Portada",
+  services: "Servicios",
+  about: "Nosotros",
+  values: "Valores",
+  faq: "Preguntas frecuentes",
+  contact: "Contacto",
+  footer: "Pie de página",
+  eyebrow: "Etiqueta",
+  title: "Título",
+  highlight: "Texto destacado",
+  subtitle: "Subtítulo",
+  description: "Descripción",
+  primaryCta: "CTA principal",
+  secondaryCta: "CTA secundario",
+  items: "Elementos",
+  stats: "Estadísticas",
+  paragraphs: "Párrafos",
+  steps: "Pasos",
+  nextSteps: "Próximos pasos",
+  projectTypes: "Tipos de proyecto",
+  body: "Descripción",
+  proof: "Prueba / beneficio",
+  question: "Pregunta",
+  answer: "Respuesta",
+  text: "Texto",
+  value: "Valor",
+  label: "Etiqueta",
+  icon: "Icono",
+  email: "Email",
+  phoneLabel: "Teléfono visible",
+  whatsappNumber: "WhatsApp",
+  directWhatsappLabel: "Etiqueta WhatsApp",
+  nextStepsTitle: "Título próximos pasos",
+  servicesTitle: "Título servicios",
+  contactTitle: "Título contacto",
+  tagline: "Tagline",
+  home: "Inicio",
+  portfolio: "Portafolio",
+  whatsapp: "WhatsApp",
+  methodEyebrow: "Etiqueta método",
+  methodTitle: "Título método",
+  id: "ID estable",
+  ctaLabel: "CTA",
+  name: "Nombre",
+  industry: "Industria",
+  metric: "Métrica",
+  result: "Resultado",
+  link: "Enlace HTTPS",
+  imagePath: "Imagen",
+};
 
-const textareaClass =
-  'mt-2 min-h-28 w-full min-w-0 resize-none rounded-2xl border border-sky-300/14 bg-[#030918] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15';
+const editableSections = [
+  "navigation",
+  "hero",
+  "services",
+  "about",
+  "values",
+  "faq",
+  "contact",
+  "footer",
+] as const;
+type Path = Array<string | number>;
 
-export default function AdminContent() {
-  const { content, setContent } = useSiteContent();
+function getAt(value: unknown, path: Path): unknown {
+  return path.reduce<unknown>(
+    (current, key) => (current as Record<string | number, unknown>)[key],
+    value,
+  );
+}
 
-  const [heroTitle, setHeroTitle] = useState(content.heroTitle);
-  const [heroSubtitle, setHeroSubtitle] = useState(content.heroSubtitle);
-  const [aboutText, setAboutText] = useState(content.aboutText);
-  const [contactEmail, setContactEmail] = useState(content.contactEmail);
-  const [contactPhone, setContactPhone] = useState(content.contactPhone);
-  const [whatsappNumber, setWhatsappNumber] = useState(content.whatsappNumber);
-  const [faqItems, setFaqItems] = useState<FaqItem[]>(content.faqItems);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+function setAt(
+  document: SiteDocument,
+  path: Path,
+  value: unknown,
+): SiteDocument {
+  const next = structuredClone(document) as unknown as Record<
+    string | number,
+    unknown
+  >;
+  let cursor = next;
+  path.slice(0, -1).forEach((key) => {
+    cursor = cursor[key] as Record<string | number, unknown>;
+  });
+  cursor[path.at(-1)!] = value;
+  return next as unknown as SiteDocument;
+}
 
-  function updateFaq(index: number, patch: Partial<FaqItem>) {
-    setFaqItems((items) => items.map((item, i) => (i === index ? { ...item, ...patch } : item)));
-  }
-
-  function removeFaq(index: number) {
-    setFaqItems((items) => items.filter((_, i) => i !== index));
-  }
-
-  function addFaq() {
-    setFaqItems((items) => [...items, { question: '', answer: '' }]);
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setSaved(false);
-
-    const updated = await updateSiteContent(content, {
-      heroTitle,
-      heroSubtitle,
-      aboutText,
-      contactEmail,
-      contactPhone,
-      whatsappNumber,
-      faqItems,
-    });
-
-    setContent(updated);
-    setSaving(false);
-    setSaved(true);
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="grid gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-black uppercase text-white">Contenido de la página</h1>
-        <p className="mt-1 text-sm text-slate-400">Editá los textos principales del sitio y los datos de contacto.</p>
-      </div>
-
-      <section className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-6">
-        <p className="text-xs font-black uppercase text-sky-300">Hero</p>
-        <div className="mt-4 grid gap-4">
-          <label className="text-xs font-semibold text-slate-300">
-            Título principal
-            <input value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className={inputClass} />
-          </label>
-          <label className="text-xs font-semibold text-slate-300">
-            Subtítulo
-            <textarea value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} className={textareaClass} />
-          </label>
-        </div>
-      </section>
-
-      <section className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-6">
-        <p className="text-xs font-black uppercase text-sky-300">Nosotros</p>
-        <label className="mt-4 block text-xs font-semibold text-slate-300">
-          Texto "Sobre nosotros"
-          <textarea value={aboutText} onChange={(e) => setAboutText(e.target.value)} className={textareaClass} />
+function Editor({
+  value,
+  path,
+  onChange,
+}: {
+  value: unknown;
+  path: Path;
+  onChange: (path: Path, value: unknown) => void;
+}) {
+  const key = String(path.at(-1));
+  if (typeof value === "string") {
+    if (key === "icon")
+      return (
+        <label className="admin-label">
+          {labels[key]}
+          <select
+            className="admin-input"
+            value={value}
+            onChange={(e) => onChange(path, e.target.value)}
+          >
+            {iconKeySchema.options.map((icon) => (
+              <option key={icon}>{icon}</option>
+            ))}
+          </select>
         </label>
-      </section>
-
-      <section className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-6">
-        <p className="text-xs font-black uppercase text-sky-300">Contacto</p>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <label className="text-xs font-semibold text-slate-300">
-            Email
-            <input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className={inputClass} />
-          </label>
-          <label className="text-xs font-semibold text-slate-300">
-            Teléfono (texto visible)
-            <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className={inputClass} />
-          </label>
-          <label className="text-xs font-semibold text-slate-300">
-            Número de WhatsApp (con código de país, sin +)
-            <input value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} className={inputClass} />
-          </label>
-        </div>
-      </section>
-
-      <section className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-6">
+      );
+    if (key === "id")
+      return (
+        <label className="admin-label">
+          {labels[key]}
+          <input className="admin-input opacity-70" value={value} readOnly />
+        </label>
+      );
+    const multiline =
+      value.length > 80 ||
+      ["description", "body", "answer", "result", "tagline"].includes(key);
+    return (
+      <label className="admin-label">
+        {labels[key] ?? key}
+        {multiline ? (
+          <textarea
+            className="admin-textarea"
+            value={value}
+            onChange={(e) => onChange(path, e.target.value)}
+          />
+        ) : (
+          <input
+            className="admin-input"
+            value={value}
+            onChange={(e) => onChange(path, e.target.value)}
+          />
+        )}
+      </label>
+    );
+  }
+  if (Array.isArray(value)) {
+    const template = getAt(defaultSiteDocument, path);
+    return (
+      <div className="grid gap-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-black uppercase text-sky-300">Preguntas frecuentes</p>
+          <p className="text-xs font-black uppercase text-sky-200">
+            {labels[key] ?? key}
+          </p>
           <button
             type="button"
-            onClick={addFaq}
-            className="inline-flex items-center gap-1.5 rounded-full border border-sky-300/20 bg-sky-300/8 px-3 py-1.5 text-xs font-black text-sky-100 transition hover:border-sky-300/50"
+            className="admin-small-button"
+            onClick={() => {
+              const nextItem = structuredClone(
+                (template as unknown[])?.[0] ?? "",
+              );
+              if (nextItem && typeof nextItem === "object" && "id" in nextItem)
+                nextItem.id = crypto.randomUUID();
+              onChange(path, [...value, nextItem]);
+            }}
           >
             <Plus className="h-3.5 w-3.5" />
             Agregar
           </button>
         </div>
+        {value.map((item, index) => (
+          <div
+            key={
+              typeof item === "object" && item && "id" in item
+                ? String(item.id)
+                : index
+            }
+            className="rounded-2xl border border-sky-300/10 bg-[#030918]/55 p-4"
+          >
+            <div className="mb-3 flex justify-end gap-1">
+              <button
+                type="button"
+                aria-label="Subir"
+                disabled={index === 0}
+                onClick={() => {
+                  const next = [...value];
+                  [next[index - 1], next[index]] = [
+                    next[index],
+                    next[index - 1],
+                  ];
+                  onChange(path, next);
+                }}
+                className="admin-icon-button"
+              >
+                <ChevronUp className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Bajar"
+                disabled={index === value.length - 1}
+                onClick={() => {
+                  const next = [...value];
+                  [next[index + 1], next[index]] = [
+                    next[index],
+                    next[index + 1],
+                  ];
+                  onChange(path, next);
+                }}
+                className="admin-icon-button"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Eliminar"
+                disabled={value.length === 1}
+                onClick={() =>
+                  onChange(
+                    path,
+                    value.filter((_, itemIndex) => itemIndex !== index),
+                  )
+                }
+                className="admin-icon-button text-red-300"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+            <Editor value={item} path={[...path, index]} onChange={onChange} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (value && typeof value === "object")
+    return (
+      <div className="grid gap-4 md:grid-cols-2">
+        {Object.entries(value).map(([childKey, child]) => (
+          <div
+            key={childKey}
+            className={
+              Array.isArray(child) || (child && typeof child === "object")
+                ? "md:col-span-2"
+                : ""
+            }
+          >
+            <Editor
+              value={child}
+              path={[...path, childKey]}
+              onChange={onChange}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  return null;
+}
 
-        <div className="mt-4 grid gap-4">
-          {faqItems.map((item, index) => (
-            <div key={index} className="grid gap-3 rounded-2xl border border-sky-300/10 bg-[#030918]/60 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <input
-                  value={item.question}
-                  onChange={(e) => updateFaq(index, { question: e.target.value })}
-                  placeholder="Pregunta"
-                  className="h-11 w-full min-w-0 rounded-xl border border-sky-300/14 bg-[#030918] px-3 text-sm text-white outline-none focus:border-sky-300/70"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeFaq(index)}
-                  aria-label="Borrar pregunta"
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-red-300/20 text-red-300 transition hover:bg-red-400/10"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-              <textarea
-                value={item.answer}
-                onChange={(e) => updateFaq(index, { answer: e.target.value })}
-                placeholder="Respuesta"
-                className="min-h-20 w-full resize-none rounded-xl border border-sky-300/14 bg-[#030918] px-3 py-2.5 text-sm text-white outline-none focus:border-sky-300/70"
+function DraftPreview({ content }: { content: SiteDocument }) {
+  return (
+    <div className="draft-preview max-h-[72vh] overflow-auto rounded-[26px] border border-sky-300/15">
+      <SiteContentProvider document={content}>
+        <Home />
+      </SiteContentProvider>
+    </div>
+  );
+}
+
+export default function AdminContent() {
+  const {
+    content,
+    loading,
+    busy,
+    dirty,
+    message,
+    error,
+    reload,
+    save,
+    publish,
+    setContent,
+  } = useAdminDraft();
+  const [preview, setPreview] = useState(false);
+  if (loading) return <p className="admin-state">Cargando borrador…</p>;
+  if (!content)
+    return (
+      <div className="admin-state" role="alert">
+        <p>{error ?? "No existe un borrador disponible."}</p>
+        <button
+          className="admin-small-button mx-auto mt-4"
+          onClick={() => void reload()}
+        >
+          <RefreshCw className="h-4 w-4" />
+          Reintentar
+        </button>
+      </div>
+    );
+  function update(path: Path, value: unknown) {
+    if (content) setContent(setAt(content, path, value));
+  }
+  const validation = siteDocumentSchema.safeParse(content);
+  return (
+    <div className="grid gap-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-black uppercase">
+            Contenido
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Guardar modifica el borrador. Publicar actualiza todo el sitio de
+            forma atómica.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setPreview((value) => !value)}
+            className="admin-secondary-button"
+          >
+            <Eye className="h-4 w-4" />
+            {preview ? "Editar" : "Vista previa"}
+          </button>
+          <button
+            type="button"
+            disabled={busy || !dirty || !validation.success}
+            onClick={() => void save()}
+            className="admin-secondary-button"
+          >
+            <Save className="h-4 w-4" />
+            Guardar borrador
+          </button>
+          <button
+            type="button"
+            disabled={busy || !validation.success}
+            onClick={() => {
+              if (window.confirm("¿Publicar este borrador en el sitio?"))
+                void publish();
+            }}
+            className="admin-primary-button"
+          >
+            <Send className="h-4 w-4" />
+            Publicar
+          </button>
+        </div>
+      </header>
+      {error && (
+        <p role="alert" className="admin-error">
+          {error}
+        </p>
+      )}
+      {message && (
+        <p role="status" className="admin-success">
+          {message}
+        </p>
+      )}
+      {!validation.success && (
+        <p role="alert" className="admin-error">
+          El documento contiene campos inválidos o vacíos. Revisá los campos
+          antes de guardar.
+        </p>
+      )}
+      {preview ? (
+        <DraftPreview content={content} />
+      ) : (
+        editableSections.map((section) => (
+          <details
+            key={section}
+            open={section === "hero"}
+            className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-6"
+          >
+            <summary className="cursor-pointer text-sm font-black uppercase text-sky-300">
+              {labels[section]}
+            </summary>
+            <div className="mt-5">
+              <Editor
+                value={content[section]}
+                path={[section]}
+                onChange={update}
               />
             </div>
-          ))}
-        </div>
-      </section>
-
-      <div className="flex items-center gap-4">
-        <button
-          type="submit"
-          disabled={saving}
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-sky-300 px-7 text-sm font-black uppercase text-white transition hover:shadow-[0_16px_42px_rgba(14,165,233,0.28)] disabled:opacity-60"
-        >
-          {saving ? 'Guardando…' : 'Guardar cambios'}
-          <Save className="h-4 w-4" />
-        </button>
-        {saved && <p className="text-sm font-semibold text-emerald-300">Cambios guardados.</p>}
-      </div>
-    </form>
+          </details>
+        ))
+      )}
+    </div>
   );
 }

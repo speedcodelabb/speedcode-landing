@@ -1,214 +1,372 @@
-import { type FormEvent, useState } from 'react';
-import { ImagePlus, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
-import { useSiteContent } from '../../context/SiteContentContext';
-import { createPortfolioItem, deletePortfolioItem, updatePortfolioItem, uploadPortfolioImage } from '../../lib/adminApi';
-import type { PortfolioItem } from '../../lib/siteContent';
+import {
+  ChevronDown,
+  ChevronUp,
+  ImagePlus,
+  Plus,
+  Save,
+  Send,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import { useAdminDraft } from "../../context/AdminDraftContext";
+import { deleteMedia, uploadMedia } from "../../lib/adminApi";
+import { getPublicMediaUrl, type PortfolioItem } from "../../lib/siteContent";
 
-const inputClass =
-  'mt-2 h-11 w-full min-w-0 rounded-xl border border-sky-300/14 bg-[#030918] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15';
-
-const textareaClass =
-  'mt-2 min-h-20 w-full min-w-0 resize-none rounded-xl border border-sky-300/14 bg-[#030918] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-300/70 focus:ring-2 focus:ring-sky-300/15';
-
-type ItemFormState = {
-  name: string;
-  industry: string;
-  metric: string;
-  result: string;
-  file: File | null;
-  imageUrl: string | null;
-};
-
-const emptyForm: ItemFormState = { name: '', industry: '', metric: '', result: '', file: null, imageUrl: null };
-
-function ItemFields({
-  form,
-  onChange,
-}: {
-  form: ItemFormState;
-  onChange: (patch: Partial<ItemFormState>) => void;
-}) {
-  return (
-    <div className="grid gap-3 md:grid-cols-2">
-      <label className="text-xs font-semibold text-slate-300">
-        Nombre del proyecto
-        <input value={form.name} onChange={(e) => onChange({ name: e.target.value })} className={inputClass} />
-      </label>
-      <label className="text-xs font-semibold text-slate-300">
-        Industria / rubro
-        <input value={form.industry} onChange={(e) => onChange({ industry: e.target.value })} className={inputClass} />
-      </label>
-      <label className="text-xs font-semibold text-slate-300">
-        Métrica destacada
-        <input value={form.metric} onChange={(e) => onChange({ metric: e.target.value })} className={inputClass} />
-      </label>
-      <label className="text-xs font-semibold text-slate-300">
-        Imagen
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => onChange({ file: e.target.files?.[0] ?? null })}
-          className="mt-2 block w-full text-xs text-slate-400 file:mr-3 file:rounded-full file:border-0 file:bg-sky-300/12 file:px-3 file:py-2 file:text-xs file:font-bold file:text-sky-100"
-        />
-      </label>
-      <label className="text-xs font-semibold text-slate-300 md:col-span-2">
-        Resultado / descripción
-        <textarea value={form.result} onChange={(e) => onChange({ result: e.target.value })} className={textareaClass} />
-      </label>
-    </div>
-  );
-}
+const blankItem = (): PortfolioItem => ({
+  id: crypto.randomUUID(),
+  name: "",
+  industry: "",
+  metric: "",
+  result: "",
+  imagePath: null,
+  link: null,
+});
 
 export default function AdminPortfolio() {
-  const { portfolioItems, setPortfolioItems } = useSiteContent();
-  const [newForm, setNewForm] = useState<ItemFormState>(emptyForm);
-  const [creating, setCreating] = useState(false);
-
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<ItemFormState>(emptyForm);
-  const [savingEdit, setSavingEdit] = useState(false);
-
-  async function handleCreate(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setCreating(true);
-
-    const imageUrl = newForm.file ? await uploadPortfolioImage(newForm.file) : newForm.imageUrl;
-    const created = await createPortfolioItem({
-      name: newForm.name,
-      industry: newForm.industry,
-      metric: newForm.metric,
-      result: newForm.result,
-      imageUrl,
-      sortOrder: portfolioItems.length,
+  const {
+    content,
+    loading,
+    busy,
+    dirty,
+    message,
+    error,
+    save,
+    publish,
+    setContent,
+  } = useAdminDraft();
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
+  const [localError, setLocalError] = useState<string | null>(null);
+  if (loading) return <p className="admin-state">Cargando portafolio…</p>;
+  if (!content)
+    return (
+      <p className="admin-error">{error ?? "No se pudo cargar el borrador."}</p>
+    );
+  const items = content.portfolio.items;
+  const updateItems = (next: PortfolioItem[]) =>
+    setContent({
+      ...content,
+      portfolio: { ...content.portfolio, items: next },
     });
+  const patchItem = (id: string, patch: Partial<PortfolioItem>) =>
+    updateItems(
+      items.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+    );
 
-    setPortfolioItems([...portfolioItems, created]);
-    setNewForm(emptyForm);
-    setCreating(false);
+  async function upload(item: PortfolioItem, file: File | null) {
+    if (!file) return;
+    setUploading(item.id);
+    setLocalError(null);
+    try {
+      const nextPath = await uploadMedia(file);
+      if (item.imagePath)
+        setPendingDeletes((paths) => [...new Set([...paths, item.imagePath!])]);
+      patchItem(item.id, { imagePath: nextPath });
+    } catch (caught) {
+      setLocalError(
+        caught instanceof Error
+          ? caught.message
+          : "No se pudo subir la imagen.",
+      );
+    } finally {
+      setUploading(null);
+    }
   }
 
-  function startEdit(item: PortfolioItem) {
-    setEditingId(item.id);
-    setEditForm({
-      name: item.name,
-      industry: item.industry,
-      metric: item.metric,
-      result: item.result,
-      file: null,
-      imageUrl: item.imageUrl,
-    });
+  async function removeImage(item: PortfolioItem) {
+    if (
+      !item.imagePath ||
+      !window.confirm(
+        "¿Quitar esta imagen? El archivo solo se borrará si ninguna versión lo usa.",
+      )
+    )
+      return;
+    const path = item.imagePath;
+    patchItem(item.id, { imagePath: null });
+    setPendingDeletes((paths) => [...new Set([...paths, path])]);
   }
 
-  async function handleSaveEdit(item: PortfolioItem) {
-    setSavingEdit(true);
-    const imageUrl = editForm.file ? await uploadPortfolioImage(editForm.file) : editForm.imageUrl;
-
-    const updated = await updatePortfolioItem({
-      ...item,
-      name: editForm.name,
-      industry: editForm.industry,
-      metric: editForm.metric,
-      result: editForm.result,
-      imageUrl,
-    });
-
-    setPortfolioItems(portfolioItems.map((existing) => (existing.id === item.id ? updated : existing)));
-    setSavingEdit(false);
-    setEditingId(null);
-  }
-
-  async function handleDelete(id: string) {
-    await deletePortfolioItem(id);
-    setPortfolioItems(portfolioItems.filter((item) => item.id !== id));
+  async function saveAndClean() {
+    if (!(await save())) return;
+    const retained: string[] = [];
+    for (const path of pendingDeletes) {
+      try {
+        await deleteMedia(path);
+      } catch {
+        retained.push(path);
+      }
+    }
+    setPendingDeletes(retained);
   }
 
   return (
     <div className="grid gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-black uppercase text-white">Portafolio</h1>
-        <p className="mt-1 text-sm text-slate-400">Agregá, editá o borrá los proyectos que se muestran en la web.</p>
-      </div>
-
-      <form onSubmit={handleCreate} className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-6">
-        <p className="flex items-center gap-2 text-xs font-black uppercase text-sky-300">
-          <ImagePlus className="h-4 w-4" />
-          Nuevo proyecto
-        </p>
-        <div className="mt-4">
-          <ItemFields form={newForm} onChange={(patch) => setNewForm((f) => ({ ...f, ...patch }))} />
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-black uppercase">
+            Portafolio
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Editá proyectos, enlaces HTTPS, imágenes y orden. Los cambios quedan
+            en borrador.
+          </p>
         </div>
-        <button
-          type="submit"
-          disabled={creating || !newForm.name}
-          className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-sky-300 px-6 text-sm font-black uppercase text-white transition hover:shadow-[0_16px_42px_rgba(14,165,233,0.28)] disabled:opacity-60"
-        >
-          {creating ? 'Agregando…' : 'Agregar proyecto'}
-          <Plus className="h-4 w-4" />
-        </button>
-      </form>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        {portfolioItems.map((item) => (
-          <div key={item.id} className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-5">
-            {editingId === item.id ? (
-              <div className="grid gap-3">
-                <ItemFields form={editForm} onChange={(patch) => setEditForm((f) => ({ ...f, ...patch }))} />
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSaveEdit(item)}
-                    disabled={savingEdit}
-                    className="inline-flex h-10 items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-sky-300 px-4 text-xs font-black uppercase text-white disabled:opacity-60"
-                  >
-                    <Save className="h-3.5 w-3.5" />
-                    {savingEdit ? 'Guardando…' : 'Guardar'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingId(null)}
-                    className="inline-flex h-10 items-center gap-2 rounded-full border border-sky-300/20 px-4 text-xs font-black uppercase text-slate-300"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                    Cancelar
-                  </button>
+        <div className="flex gap-2">
+          <button
+            disabled={busy || !dirty}
+            onClick={() => void saveAndClean()}
+            className="admin-secondary-button"
+          >
+            <Save className="h-4 w-4" />
+            Guardar
+          </button>
+          <button
+            disabled={busy}
+            onClick={() => {
+              if (window.confirm("¿Publicar todo el borrador?")) void publish();
+            }}
+            className="admin-primary-button"
+          >
+            <Send className="h-4 w-4" />
+            Publicar
+          </button>
+        </div>
+      </header>
+      {(error || localError) && (
+        <p role="alert" className="admin-error">
+          {error || localError}
+        </p>
+      )}
+      {message && (
+        <p role="status" className="admin-success">
+          {message}
+        </p>
+      )}
+      <section className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-6">
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="admin-label">
+            Etiqueta
+            <input
+              className="admin-input"
+              value={content.portfolio.eyebrow}
+              onChange={(e) =>
+                setContent({
+                  ...content,
+                  portfolio: { ...content.portfolio, eyebrow: e.target.value },
+                })
+              }
+            />
+          </label>
+          <label className="admin-label">
+            CTA
+            <input
+              className="admin-input"
+              value={content.portfolio.ctaLabel}
+              onChange={(e) =>
+                setContent({
+                  ...content,
+                  portfolio: { ...content.portfolio, ctaLabel: e.target.value },
+                })
+              }
+            />
+          </label>
+          <label className="admin-label">
+            Título
+            <input
+              className="admin-input"
+              value={content.portfolio.title}
+              onChange={(e) =>
+                setContent({
+                  ...content,
+                  portfolio: { ...content.portfolio, title: e.target.value },
+                })
+              }
+            />
+          </label>
+          <label className="admin-label">
+            Destacado
+            <input
+              className="admin-input"
+              value={content.portfolio.highlight}
+              onChange={(e) =>
+                setContent({
+                  ...content,
+                  portfolio: {
+                    ...content.portfolio,
+                    highlight: e.target.value,
+                  },
+                })
+              }
+            />
+          </label>
+        </div>
+      </section>
+      <button
+        type="button"
+        onClick={() => updateItems([...items, blankItem()])}
+        className="admin-secondary-button w-fit"
+      >
+        <Plus className="h-4 w-4" />
+        Nuevo proyecto
+      </button>
+      <div className="grid gap-4">
+        {items.length === 0 && (
+          <p className="admin-state">
+            No hay proyectos. Podés publicar este estado vacío o agregar uno.
+          </p>
+        )}
+        {items.map((item, index) => {
+          const imageUrl = getPublicMediaUrl(item.imagePath);
+          return (
+            <article
+              key={item.id}
+              className="premium-card rounded-[26px] border border-sky-300/14 bg-[#071126]/80 p-5"
+            >
+              <div className="mb-4 flex justify-end gap-1">
+                <button
+                  className="admin-icon-button"
+                  disabled={index === 0}
+                  aria-label="Subir proyecto"
+                  onClick={() => {
+                    const next = [...items];
+                    [next[index - 1], next[index]] = [
+                      next[index],
+                      next[index - 1],
+                    ];
+                    updateItems(next);
+                  }}
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </button>
+                <button
+                  className="admin-icon-button"
+                  disabled={index === items.length - 1}
+                  aria-label="Bajar proyecto"
+                  onClick={() => {
+                    const next = [...items];
+                    [next[index + 1], next[index]] = [
+                      next[index],
+                      next[index + 1],
+                    ];
+                    updateItems(next);
+                  }}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                <button
+                  className="admin-icon-button text-red-300"
+                  aria-label="Eliminar proyecto"
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        `¿Eliminar ${item.name || "este proyecto"} del borrador?`,
+                      )
+                    ) {
+                      if (item.imagePath)
+                        setPendingDeletes((paths) => [
+                          ...new Set([...paths, item.imagePath!]),
+                        ]);
+                      updateItems(
+                        items.filter((existing) => existing.id !== item.id),
+                      );
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="grid gap-4 md:grid-cols-[180px_1fr]">
+                <div>
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt=""
+                      className="h-32 w-full rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-32 items-center justify-center rounded-xl border border-dashed border-sky-300/20 text-slate-500">
+                      <ImagePlus />
+                    </div>
+                  )}
+                  <label className="admin-small-button mt-3 cursor-pointer justify-center">
+                    {uploading === item.id ? "Subiendo…" : "Elegir imagen"}
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept="image/jpeg,image/png,image/webp,image/avif"
+                      disabled={uploading === item.id}
+                      onChange={(e) =>
+                        void upload(item, e.target.files?.[0] ?? null)
+                      }
+                    />
+                  </label>
+                  {item.imagePath && (
+                    <button
+                      type="button"
+                      onClick={() => void removeImage(item)}
+                      className="mt-2 w-full text-xs text-red-300"
+                    >
+                      Quitar imagen
+                    </button>
+                  )}
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="admin-label">
+                    Nombre
+                    <input
+                      className="admin-input"
+                      value={item.name}
+                      onChange={(e) =>
+                        patchItem(item.id, { name: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="admin-label">
+                    Industria
+                    <input
+                      className="admin-input"
+                      value={item.industry}
+                      onChange={(e) =>
+                        patchItem(item.id, { industry: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="admin-label">
+                    Métrica
+                    <input
+                      className="admin-input"
+                      value={item.metric}
+                      onChange={(e) =>
+                        patchItem(item.id, { metric: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="admin-label">
+                    Enlace HTTPS opcional
+                    <input
+                      type="url"
+                      className="admin-input"
+                      value={item.link ?? ""}
+                      onChange={(e) =>
+                        patchItem(item.id, { link: e.target.value || null })
+                      }
+                    />
+                  </label>
+                  <label className="admin-label md:col-span-2">
+                    Resultado
+                    <textarea
+                      className="admin-textarea"
+                      value={item.result}
+                      onChange={(e) =>
+                        patchItem(item.id, { result: e.target.value })
+                      }
+                    />
+                  </label>
                 </div>
               </div>
-            ) : (
-              <>
-                {item.imageUrl && (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="mb-4 h-36 w-full rounded-2xl object-cover"
-                  />
-                )}
-                <p className="text-xs font-black uppercase text-sky-300">{item.industry || 'Sin rubro'}</p>
-                <h3 className="mt-2 text-lg font-black uppercase text-white">{item.name || 'Sin nombre'}</h3>
-                <p className="mt-2 text-sm font-black text-white">{item.metric}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-300">{item.result}</p>
-
-                <div className="mt-4 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => startEdit(item)}
-                    className="inline-flex h-10 items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/8 px-4 text-xs font-black text-sky-100"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(item.id)}
-                    className="inline-flex h-10 items-center gap-2 rounded-full border border-red-300/20 px-4 text-xs font-black text-red-300"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Borrar
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </div>
   );

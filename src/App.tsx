@@ -1,36 +1,41 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { ADMIN_BASE_PATH } from "./config/admin";
+import { SiteContentProvider } from "./context/SiteContentContext";
+import Home from "./pages/Home";
 
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Home from './pages/Home';
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminLayout from './pages/admin/AdminLayout';
-import AdminContent from './pages/admin/AdminContent';
-import AdminPortfolio from './pages/admin/AdminPortfolio';
-import RequireAuth from './components/admin/RequireAuth';
-import { SiteContentProvider } from './context/SiteContentContext';
+const AdminRouter = lazy(() => import("./pages/admin/AdminRouter"));
 
 export default function App() {
   return (
     <SiteContentProvider>
       <BrowserRouter>
-        <div className="min-h-screen">
-          <main>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin" element={<RequireAuth />}>
-                <Route element={<AdminLayout />}>
-                  <Route index element={<AdminContent />} />
-                  <Route path="portafolio" element={<AdminPortfolio />} />
-                </Route>
-              </Route>
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-        </div>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route
+            path={`${ADMIN_BASE_PATH}/*`}
+            element={
+              <Suspense
+                fallback={
+                  <div className="flex min-h-screen items-center justify-center bg-[#020614] text-slate-300">
+                    Cargando panel…
+                  </div>
+                }
+              >
+                <AdminRouter />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/admin/*"
+            element={
+              <div className="flex min-h-screen items-center justify-center bg-[#020614] text-white">
+                <h1 className="text-2xl font-black">404</h1>
+              </div>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </BrowserRouter>
     </SiteContentProvider>
   );
