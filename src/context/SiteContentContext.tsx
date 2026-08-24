@@ -1,52 +1,76 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import {
-  defaultPortfolioItems,
-  defaultSiteContent,
-  fetchPortfolioItems,
-  fetchSiteContent,
-  type PortfolioItem,
-  type SiteContent,
-} from '../lib/siteContent';
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  defaultSiteDocument,
+  fetchPublishedDocument,
+  type SiteDocument,
+} from "../lib/siteContent";
 
 type SiteContentContextValue = {
-  content: SiteContent;
-  portfolioItems: PortfolioItem[];
+  content: SiteDocument;
   loading: boolean;
-  setContent: (content: SiteContent) => void;
-  setPortfolioItems: (items: PortfolioItem[]) => void;
+  usingFallback: boolean;
+  refresh: () => Promise<void>;
 };
 
 const SiteContentContext = createContext<SiteContentContextValue | null>(null);
 
-export function SiteContentProvider({ children }: { children: ReactNode }) {
-  const [content, setContent] = useState<SiteContent>(defaultSiteContent);
-  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>(defaultPortfolioItems);
-  const [loading, setLoading] = useState(true);
+export function SiteContentProvider({
+  children,
+  document,
+}: {
+  children: ReactNode;
+  document?: SiteDocument;
+}) {
+  const [content, setContent] = useState(document ?? defaultSiteDocument);
+  const [loading, setLoading] = useState(!document);
+  const [usingFallback, setUsingFallback] = useState(false);
+
+  async function refresh() {
+    setLoading(true);
+    try {
+      const nextContent = await fetchPublishedDocument();
+      setContent(nextContent);
+      setUsingFallback(nextContent === defaultSiteDocument);
+    } catch (error) {
+      console.error("Error inesperado al cargar el contenido público", error);
+      setContent(defaultSiteDocument);
+      setUsingFallback(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    let cancelled = false;
-
-    Promise.all([fetchSiteContent(), fetchPortfolioItems()]).then(([fetchedContent, fetchedItems]) => {
-      if (cancelled) return;
-      setContent(fetchedContent);
-      setPortfolioItems(fetchedItems);
+    if (document) {
+      setContent(document);
+      setUsingFallback(false);
       setLoading(false);
-    });
+      return;
+    }
+    void refresh();
+  }, [document]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+  const value = useMemo(
+    () => ({ content, loading, usingFallback, refresh }),
+    [content, loading, usingFallback],
+  );
   return (
-    <SiteContentContext.Provider value={{ content, portfolioItems, loading, setContent, setPortfolioItems }}>
+    <SiteContentContext.Provider value={value}>
       {children}
     </SiteContentContext.Provider>
   );
 }
 
 export function useSiteContent() {
-  const ctx = useContext(SiteContentContext);
-  if (!ctx) throw new Error('useSiteContent debe usarse dentro de SiteContentProvider');
-  return ctx;
+  const context = useContext(SiteContentContext);
+  if (!context)
+    throw new Error("useSiteContent debe usarse dentro de SiteContentProvider");
+  return context;
 }
