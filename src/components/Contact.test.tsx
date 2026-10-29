@@ -11,8 +11,10 @@ import { defaultSiteDocument } from "../lib/siteContent";
 import Contact from "./Contact";
 
 let solveChallenge: (token: string) => void = () => undefined;
+let widgetOptions: TurnstileOptions | null = null;
 const turnstile = {
   render: vi.fn((_container: HTMLElement, options: TurnstileOptions) => {
+    widgetOptions = options;
     solveChallenge = (token) => options.callback?.(token);
     return "widget-1";
   }),
@@ -80,10 +82,38 @@ describe("Contact", () => {
 
     fireEvent.submit(form);
     expect(
+      await screen.findByText(/Estamos verificando la conexión/),
+    ).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("mantiene Turnstile invisible salvo que pida interacción", () => {
+    renderContactForm();
+    const container = screen.getByRole("group", {
+      name: "Verificación de seguridad",
+    });
+    expect(widgetOptions?.appearance).toBe("interaction-only");
+    expect(container).toHaveClass("h-0");
+
+    act(() => widgetOptions?.["before-interactive-callback"]?.());
+    expect(container).not.toHaveClass("h-0");
+
+    act(() => widgetOptions?.["after-interactive-callback"]?.());
+    expect(container).toHaveClass("h-0");
+  });
+
+  it("pide completar la verificación si Turnstile la está mostrando", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const form = renderContactForm();
+    act(() => widgetOptions?.["before-interactive-callback"]?.());
+
+    fireEvent.submit(form);
+    expect(
       await screen.findByText(
         "Completá la verificación de seguridad antes de enviar.",
       ),
     ).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
