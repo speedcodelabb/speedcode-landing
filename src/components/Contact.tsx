@@ -1,7 +1,9 @@
 import {
   ArrowRight,
   CheckCircle2,
+  Clock,
   Mail,
+  MapPin,
   MessageCircle,
   Phone,
 } from "lucide-react";
@@ -143,7 +145,7 @@ export default function Contact({
   return (
     <section id="contacto" className="mt-24 scroll-mt-24">
       <div className="grid gap-8 rounded-[32px] border border-sky-300/14 bg-[#071126]/80 p-6 md:grid-cols-[.85fr_1.15fr] md:p-10">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-black uppercase text-sky-300">
             {content.contact.eyebrow}
           </p>
@@ -159,9 +161,9 @@ export default function Contact({
           <div className="mt-7 grid gap-3">
             <a
               href={`mailto:${content.contact.email}`}
-              className="flex items-center gap-3 text-sm text-slate-200"
+              className="flex items-center gap-3 break-all text-sm text-slate-200"
             >
-              <Mail className="h-4 w-4 text-sky-300" />
+              <Mail className="h-4 w-4 shrink-0 text-sky-300" />
               {content.contact.email}
             </a>
             <a
@@ -173,6 +175,23 @@ export default function Contact({
               <Phone className="h-4 w-4 text-sky-300" />
               {content.contact.phoneLabel}
             </a>
+            <p className="flex items-center gap-3 text-sm text-slate-200">
+              <MapPin
+                aria-hidden="true"
+                className="h-4 w-4 shrink-0 text-sky-300"
+              />
+              {content.contact.city}
+            </p>
+            <p className="flex items-start gap-3 text-sm leading-6 text-slate-200">
+              <Clock
+                aria-hidden="true"
+                className="mt-1 h-4 w-4 shrink-0 text-sky-300"
+              />
+              {content.contact.schedule}
+            </p>
+            <p className="text-sm leading-6 text-sky-200">
+              {content.contact.responsePromise}
+            </p>
           </div>
           <div className="mt-8">
             <h3 className="text-sm font-black uppercase text-white">
@@ -190,99 +209,148 @@ export default function Contact({
             </ol>
           </div>
         </div>
-        <form onSubmit={submit} className="grid content-start gap-4" noValidate>
-          <label className="admin-label">
-            Nombre
-            <input
-              name="name"
-              required
-              maxLength={100}
-              autoComplete="name"
-              className="admin-input"
-            />
-          </label>
-          <label className="admin-label">
-            Email
-            <input
-              name="email"
-              type="email"
-              required
-              maxLength={200}
-              autoComplete="email"
-              className="admin-input"
-            />
-          </label>
-          <label className="admin-label">
-            Tipo de proyecto
-            <select
-              name="projectTypeId"
-              required
-              defaultValue=""
-              className="admin-input"
-            >
-              <option value="" disabled>
-                Seleccioná una opción
-              </option>
-              {content.contact.projectTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.label}
+        <div className="min-w-0">
+          <h3 className="font-heading text-2xl font-black">
+            ¿Qué necesitás resolver?
+          </h3>
+          <div className="mt-5 grid gap-3">
+            {content.contact.paths.map((path) => (
+              <a
+                key={path.id}
+                href={getWhatsappUrl(
+                  content.contact.whatsappNumber,
+                  path.whatsappMessage,
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="premium-card block overflow-hidden rounded-2xl border border-sky-300/14 bg-[#071126] p-5 hover:border-sky-300/40"
+              >
+                <h4 className="font-heading text-lg font-black">
+                  {path.title}
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-slate-300">
+                  {path.description}
+                </p>
+                <span className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-sky-300">
+                  {path.cta}
+                  <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
+                </span>
+              </a>
+            ))}
+          </div>
+          <h3 className="font-heading mb-5 mt-8 text-lg font-bold">
+            ¿Preferís dejarnos tus datos? Te escribimos nosotros.
+          </h3>
+          <form
+            onSubmit={submit}
+            className="grid content-start gap-4 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0"
+            noValidate
+          >
+            <label className="admin-label">
+              Nombre
+              <input
+                name="name"
+                required
+                maxLength={100}
+                autoComplete="name"
+                className="admin-input"
+              />
+            </label>
+            <label className="admin-label">
+              Email
+              <input
+                name="email"
+                type="email"
+                required
+                maxLength={200}
+                autoComplete="email"
+                className="admin-input"
+              />
+            </label>
+            <label className="admin-label">
+              Tipo de proyecto
+              <select
+                name="projectTypeId"
+                required
+                defaultValue=""
+                className="admin-input"
+              >
+                <option value="" disabled>
+                  Seleccioná una opción
                 </option>
-              ))}
-            </select>
-          </label>
-          <label className="admin-label">
-            Contanos brevemente qué necesitás
-            <textarea
-              name="message"
-              required
-              minLength={10}
-              maxLength={2000}
-              className="admin-textarea min-h-32"
-            />
-          </label>
-          {siteKey ? (
-            <div
-              ref={widget}
-              role="group"
-              aria-label="Verificación de seguridad"
-              // Mientras Turnstile es invisible, el contenedor no ocupa espacio
-              // ni deja el hueco de la grilla.
-              className={
-                challengeVisible ? undefined : "-mt-4 h-0 overflow-hidden"
-              }
-            />
-          ) : (
-            <p className="admin-error">
-              El formulario no está configurado en este entorno.
-            </p>
-          )}
-          {status !== "idle" && (
-            <p
-              role={
-                status === "error" || status === "warning" ? "alert" : "status"
-              }
-              className={`text-sm ${status === "success" ? "text-emerald-300" : status === "sending" ? "text-sky-200" : "text-amber-200"}`}
+                {content.contact.projectTypes.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="admin-label">
+              Contanos brevemente qué necesitás
+              <textarea
+                name="message"
+                required
+                minLength={10}
+                maxLength={2000}
+                className="admin-textarea min-h-32"
+              />
+            </label>
+            {siteKey ? (
+              <div
+                ref={widget}
+                role="group"
+                aria-label="Verificación de seguridad"
+                // Mientras Turnstile es invisible, el contenedor no ocupa espacio
+                // ni deja el hueco de la grilla.
+                className={
+                  challengeVisible ? undefined : "-mt-4 h-0 overflow-hidden"
+                }
+              />
+            ) : (
+              <p className="admin-error">
+                El formulario no está configurado en este entorno.
+              </p>
+            )}
+            {status !== "idle" && (
+              <p
+                role={
+                  status === "error" || status === "warning"
+                    ? "alert"
+                    : "status"
+                }
+                className={`text-sm ${status === "success" ? "text-emerald-300" : status === "sending" ? "text-sky-200" : "text-amber-200"}`}
+              >
+                {message}
+              </p>
+            )}
+            <button
+              disabled={status === "sending" || !siteKey}
+              className="mr-10 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-sky-300 px-3 py-3 text-xs font-black uppercase disabled:opacity-50 md:mr-0 md:px-6 md:text-sm"
             >
-              {message}
+              {status === "sending" ? "Enviando…" : "Enviar y abrir WhatsApp"}
+              <ArrowRight className="h-4 w-4" />
+            </button>
+            <p className="text-xs leading-6 text-slate-400">
+              Al enviar aceptás nuestra{" "}
+              <a
+                href="/privacidad"
+                className="text-sky-300 underline underline-offset-4 hover:text-sky-100"
+              >
+                política de privacidad
+              </a>
+              .
             </p>
-          )}
-          <button
-            disabled={status === "sending" || !siteKey}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-sky-300 px-6 text-sm font-black uppercase disabled:opacity-50"
-          >
-            {status === "sending" ? "Enviando…" : "Enviar y abrir WhatsApp"}
-            <ArrowRight className="h-4 w-4" />
-          </button>
-          <a
-            href={defaultWhatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center gap-2 text-sm font-bold text-sky-300"
-          >
-            <MessageCircle className="h-4 w-4" />
-            {content.contact.directWhatsappLabel}
-          </a>
-        </form>
+            <a
+              href={defaultWhatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 text-sm font-bold text-sky-300"
+            >
+              <MessageCircle className="h-4 w-4" />
+              {content.contact.directWhatsappLabel}
+            </a>
+          </form>
+        </div>
       </div>
     </section>
   );

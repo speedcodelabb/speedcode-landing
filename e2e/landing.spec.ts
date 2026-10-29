@@ -8,6 +8,9 @@ test("la landing carga sus secciones principales y navegación accesible", async
   await expect(page.locator("#servicios")).toBeVisible();
   await expect(page.locator("#portafolio")).toBeVisible();
   await expect(page.locator("#contacto")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Escribinos por WhatsApp" }),
+  ).toBeVisible();
   const mobileMenu = page.getByRole("button", { name: "Abrir navegación" });
   if (await mobileMenu.isVisible()) {
     await mobileMenu.click();
@@ -18,6 +21,52 @@ test("la landing carga sus secciones principales y navegación accesible", async
     await expect(
       page.getByRole("navigation", { name: "Navegación principal" }),
     ).toBeVisible();
+  }
+});
+
+test("/privacidad carga con su encabezado y permite volver a la portada", async ({
+  page,
+}) => {
+  await page.goto("/privacidad");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Política de privacidad" }),
+  ).toBeVisible();
+  await expect(page).toHaveTitle("Política de privacidad | SPEEDCODE Lab");
+  await expect(
+    page.getByRole("link", { name: "Escribinos por WhatsApp" }),
+  ).toHaveCount(0);
+  await page.getByRole("link", { name: /Volver al inicio/ }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(
+    page.getByRole("link", { name: "Escribinos por WhatsApp" }),
+  ).toBeVisible();
+});
+
+test("a 375 px no hay desborde y WhatsApp no tapa el envío del formulario", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const floating = page.getByRole("link", { name: "Escribinos por WhatsApp" });
+  const send = page.getByRole("button", { name: "Enviar y abrir WhatsApp" });
+  await send.evaluate((element) =>
+    element.scrollIntoView({ block: "end", behavior: "instant" }),
+  );
+  const floatingBox = await floating.boundingBox();
+  const sendBox = await send.boundingBox();
+  expect(floatingBox).not.toBeNull();
+  expect(sendBox).not.toBeNull();
+  expect(floatingBox!.width).toBeGreaterThanOrEqual(48);
+  expect(floatingBox!.height).toBeGreaterThanOrEqual(48);
+  expect(sendBox!.x + sendBox!.width).toBeLessThanOrEqual(floatingBox!.x);
+  for (const path of ["/", "/privacidad"]) {
+    await page.goto(path);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
   }
 });
 

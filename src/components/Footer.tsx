@@ -33,7 +33,7 @@ export default function Footer({
             {content.services.items.map((item) => (
               <a
                 key={item.id}
-                href={`#${item.id}`}
+                href={`/#${item.id}`}
                 className="hover:text-sky-300"
               >
                 {item.title}
@@ -46,6 +46,8 @@ export default function Footer({
             {content.footer.contactTitle}
           </h3>
           <div className="mt-4 grid gap-3 text-sm text-slate-400">
+            <p>{content.contact.city}</p>
+            <p className="leading-6">{content.contact.schedule}</p>
             <a href={`tel:+${content.contact.whatsappNumber}`}>
               {content.contact.phoneLabel}
             </a>
@@ -69,6 +71,12 @@ export default function Footer({
           reservados.
         </p>
         <p>{content.footer.tagline}</p>
+        <a
+          href="/privacidad"
+          className="text-sky-300 underline underline-offset-4 hover:text-sky-100"
+        >
+          Política de privacidad
+        </a>
       </div>
     </footer>
   );

@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { useSiteContent } from "../context/SiteContentContext";
+import { getServiceIcon } from "../lib/serviceIcons";
 
 export const PROCESS_VIDEO_SRC = "/video/proceso.mp4";
 export const PROCESS_VIDEO_POSTER = "/video/proceso-poster.jpg";
@@ -23,6 +25,7 @@ function prefersReducedMotion() {
 // Vídeo del proceso: se reproduce en silencio solo mientras está a la vista y
 // nunca de forma automática si el visitante pidió reducir el movimiento.
 export default function ProcessVideo() {
+  const { content } = useSiteContent();
   const video = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -91,6 +94,33 @@ export default function ProcessVideo() {
         Vídeo de 38 segundos con música de fondo, sin narración, que muestra las
         etapas de un proyecto web en Speedcode Lab: {STEPS.join(", ")}.
       </p>
+      <div className="mt-10">
+        <p className="text-xs font-black uppercase text-sky-300">
+          {content.commitments.eyebrow}
+        </p>
+        <h3 className="font-heading mt-3 text-2xl font-black uppercase md:text-3xl">
+          {content.commitments.title}
+        </h3>
+        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {content.commitments.items.map((item) => {
+            const Icon = getServiceIcon(item.icon);
+            return (
+              <article
+                key={item.id}
+                className="premium-card overflow-hidden rounded-2xl border border-sky-300/14 bg-[#071126] p-6"
+              >
+                <Icon aria-hidden="true" className="h-6 w-6 text-sky-300" />
+                <h4 className="font-heading mt-4 text-lg font-black">
+                  {item.title}
+                </h4>
+                <p className="mt-3 text-sm leading-7 text-slate-300">
+                  {item.body}
+                </p>
+              </article>
+            );
+          })}
+        </div>
+      </div>
     </section>
   );
 }

@@ -3,6 +3,7 @@ import About from "../components/About";
 import Contact from "../components/Contact";
 import FAQ from "../components/FAQ";
 import Footer from "../components/Footer";
+import FloatingWhatsapp from "../components/FloatingWhatsapp";
 import Hero from "../components/Hero";
 import Navbar from "../components/Navbar";
 import Portfolio from "../components/Portfolio";
@@ -10,16 +11,17 @@ import ProcessVideo from "../components/ProcessVideo";
 import ServicesDetails from "../components/ServicesDetails";
 import Values from "../components/Values";
 import { useSiteContent } from "../context/SiteContentContext";
-import { getWhatsappUrl } from "../lib/siteContent";
+import { BUDGET_WHATSAPP_MESSAGE, getWhatsappUrl } from "../lib/siteContent";
 
-export default function Home() {
+export default function Home({
+  showFloatingWhatsapp = true,
+}: {
+  showFloatingWhatsapp?: boolean;
+}) {
   const { content } = useSiteContent();
   const defaultWhatsappUrl = useMemo(
     () =>
-      getWhatsappUrl(
-        content.contact.whatsappNumber,
-        "Hola Speedcode Lab, quiero hablar sobre un proyecto y recibir una propuesta.",
-      ),
+      getWhatsappUrl(content.contact.whatsappNumber, BUDGET_WHATSAPP_MESSAGE),
     [content.contact.whatsappNumber],
   );
 
@@ -38,6 +40,7 @@ export default function Home() {
         <Contact defaultWhatsappUrl={defaultWhatsappUrl} />
       </main>
       <Footer defaultWhatsappUrl={defaultWhatsappUrl} />
+      {showFloatingWhatsapp && <FloatingWhatsapp />}
     </div>
   );
 }

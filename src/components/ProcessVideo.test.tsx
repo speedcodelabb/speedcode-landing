@@ -1,5 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { SiteContentProvider } from "../context/SiteContentContext";
+import { defaultSiteDocument } from "../lib/siteContent";
 import ProcessVideo, {
   PROCESS_VIDEO_POSTER,
   PROCESS_VIDEO_SRC,
@@ -47,10 +49,18 @@ function getVideo() {
     .querySelector("video")!;
 }
 
+function renderProcessVideo() {
+  return render(
+    <SiteContentProvider document={defaultSiteDocument}>
+      <ProcessVideo />
+    </SiteContentProvider>,
+  );
+}
+
 describe("ProcessVideo", () => {
   it("carga el vídeo de forma diferida, mudo y con controles", () => {
     mockReducedMotion(false);
-    render(<ProcessVideo />);
+    renderProcessVideo();
     const video = getVideo();
     expect(video.getAttribute("src")).toBe(PROCESS_VIDEO_SRC);
     expect(video.getAttribute("poster")).toBe(PROCESS_VIDEO_POSTER);
@@ -62,7 +72,7 @@ describe("ProcessVideo", () => {
 
   it("se reproduce solo mientras está a la vista", () => {
     mockReducedMotion(false);
-    render(<ProcessVideo />);
+    renderProcessVideo();
     expect(observe).toHaveBeenCalledWith(getVideo());
     observerCallback?.([{ isIntersecting: true }]);
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1);
@@ -72,9 +82,23 @@ describe("ProcessVideo", () => {
 
   it("no se reproduce solo si el visitante pide reducir el movimiento", () => {
     mockReducedMotion(true);
-    render(<ProcessVideo />);
+    renderProcessVideo();
     expect(observerCallback).toBeNull();
     expect(observe).not.toHaveBeenCalled();
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+  });
+
+  it("muestra los compromisos configurados debajo del vídeo", () => {
+    mockReducedMotion(true);
+    renderProcessVideo();
+    for (const item of defaultSiteDocument.commitments.items) {
+      const heading = screen.getByRole("heading", { name: item.title });
+      expect(heading).toBeInTheDocument();
+      expect(screen.getByText(item.body)).toBeInTheDocument();
+      expect(
+        getVideo().compareDocumentPosition(heading) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
   });
 });
