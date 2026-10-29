@@ -1,0 +1,6 @@
+# pnpm escribe el lockfile en su propio formato; formatearlo genera diffs falsos.
+pnpm-lock.yaml
+dist/
+coverage/
+playwright-report/
+test-results/

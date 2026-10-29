@@ -1,4 +1,11 @@
 node_modules/
+.pnpm-store/
+.playwright-browsers/
+playwright-report/
+test-results/
+e2e/.auth/
+supabase/.branches/
+supabase/.temp/
 build/
 dist/
 coverage/
