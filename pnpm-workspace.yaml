@@ -1,3 +1,9 @@
 onlyBuiltDependencies:
   - esbuild
   - sharp
+
+# Security floors for transitive dev/build deps (Oct 2026 advisories).
+# @vercel/node is only used for its types and still pins undici 5.
+overrides:
+  "undici@<6.27.0": ^6.27.0
+  "zod@>=4.0.0 <4.6.6": ^4.6.6
