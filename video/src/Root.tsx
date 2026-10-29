@@ -8,6 +8,7 @@ import {
 } from "remotion";
 import { FPS, MUSIC_PATH } from "./guion";
 import { Proceso, PROCESO_DURATION, type ProcesoProps } from "./Proceso";
+import { VerticalContext } from "./ui";
 
 async function exists(path: string): Promise<boolean> {
   try {
@@ -46,6 +47,13 @@ const ProcesoHD: FC<ProcesoProps> = (props) => (
   </AbsoluteFill>
 );
 
+// Versión vertical para Instagram Reels, a la resolución nativa de la app.
+const ProcesoReel: FC<ProcesoProps> = (props) => (
+  <VerticalContext.Provider value>
+    <Proceso {...props} />
+  </VerticalContext.Provider>
+);
+
 // Incluye la música solo si el archivo existe en public/.
 const calculateMetadata: CalculateMetadataFunction<
   ProcesoProps
@@ -54,14 +62,26 @@ const calculateMetadata: CalculateMetadataFunction<
 });
 
 export const RemotionRoot = () => (
-  <Composition
-    id="Proceso"
-    component={ProcesoHD}
-    fps={FPS}
-    width={OUTPUT_WIDTH}
-    height={OUTPUT_HEIGHT}
-    durationInFrames={PROCESO_DURATION}
-    defaultProps={{ music: null }}
-    calculateMetadata={calculateMetadata}
-  />
+  <>
+    <Composition
+      id="Proceso"
+      component={ProcesoHD}
+      fps={FPS}
+      width={OUTPUT_WIDTH}
+      height={OUTPUT_HEIGHT}
+      durationInFrames={PROCESO_DURATION}
+      defaultProps={{ music: null }}
+      calculateMetadata={calculateMetadata}
+    />
+    <Composition
+      id="ProcesoReel"
+      component={ProcesoReel}
+      fps={FPS}
+      width={1080}
+      height={1920}
+      durationInFrames={PROCESO_DURATION}
+      defaultProps={{ music: null }}
+      calculateMetadata={calculateMetadata}
+    />
+  </>
 );

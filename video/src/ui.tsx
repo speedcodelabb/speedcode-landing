@@ -1,4 +1,9 @@
-import type { CSSProperties, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import {
   AbsoluteFill,
   interpolate,
@@ -7,6 +12,10 @@ import {
   useVideoConfig,
 } from "remotion";
 import { colors, fonts, gradientText } from "./theme";
+
+/** true en la versión vertical (Reels, 1080×1920). */
+export const VerticalContext = createContext(false);
+export const useVertical = () => useContext(VerticalContext);
 
 /** Progreso 0→1 de una entrada suave que empieza `delay` frames después. */
 export function useEnter(
@@ -185,15 +194,17 @@ const STEP_LABELS = [
 
 function ProgressRail({ active }: { active: number }) {
   const fill = useEnter(6);
+  const vertical = useVertical();
   return (
     <div
       style={{
         position: "absolute",
-        left: 120,
-        right: 120,
-        bottom: 70,
+        left: vertical ? 90 : 120,
+        right: vertical ? 90 : 120,
+        // En vertical queda por encima de la zona que tapa la descripción de Reels.
+        bottom: vertical ? 420 : 70,
         display: "flex",
-        gap: 18,
+        gap: vertical ? 12 : 18,
       }}
     >
       {STEP_LABELS.map((label, index) => {
@@ -218,23 +229,25 @@ function ProgressRail({ active }: { active: number }) {
                 }}
               />
             </div>
-            <p
-              style={{
-                margin: "12px 0 0",
-                fontFamily: fonts.body,
-                fontWeight: 800,
-                fontSize: 18,
-                letterSpacing: 2,
-                textTransform: "uppercase",
-                color: current
-                  ? colors.sky200
-                  : done
-                    ? colors.slate400
-                    : colors.slate500,
-              }}
-            >
-              {label}
-            </p>
+            {vertical ? null : (
+              <p
+                style={{
+                  margin: "12px 0 0",
+                  fontFamily: fonts.body,
+                  fontWeight: 800,
+                  fontSize: vertical ? 14 : 18,
+                  letterSpacing: vertical ? 1 : 2,
+                  textTransform: "uppercase",
+                  color: current
+                    ? colors.sky200
+                    : done
+                      ? colors.slate400
+                      : colors.slate500,
+                }}
+              >
+                {label}
+              </p>
+            )}
           </div>
         );
       })}
@@ -242,7 +255,8 @@ function ProgressRail({ active }: { active: number }) {
   );
 }
 
-/** Maqueta común de los seis pasos: texto a la izquierda, visual a la derecha. */
+/** Maqueta común de los seis pasos: texto a la izquierda y visual a la derecha
+ * (en vertical, texto arriba y visual debajo). */
 export function StepLayout({
   index,
   title,
@@ -255,6 +269,7 @@ export function StepLayout({
   children: ReactNode;
 }) {
   const frame = useCurrentFrame();
+  const vertical = useVertical();
   const numberOpacity = interpolate(frame, [0, 12], [0, 1], {
     extrapolateRight: "clamp",
   });
@@ -264,9 +279,9 @@ export function StepLayout({
       <div
         style={{
           position: "absolute",
-          left: 120,
-          top: 150,
-          width: 700,
+          left: vertical ? 90 : 120,
+          top: vertical ? 250 : 150,
+          width: vertical ? 900 : 700,
         }}
       >
         <p
@@ -274,7 +289,7 @@ export function StepLayout({
             margin: 0,
             fontFamily: fonts.heading,
             fontWeight: 700,
-            fontSize: 150,
+            fontSize: vertical ? 160 : 150,
             lineHeight: 1,
             color: "rgba(125,211,252,0.14)",
             opacity: numberOpacity,
@@ -288,7 +303,7 @@ export function StepLayout({
               margin: "10px 0 0",
               fontFamily: fonts.heading,
               fontWeight: 700,
-              fontSize: 92,
+              fontSize: vertical ? 120 : 92,
               lineHeight: 1,
               letterSpacing: -2,
               textTransform: "uppercase",
@@ -303,7 +318,7 @@ export function StepLayout({
             style={{
               margin: "30px 0 0",
               fontFamily: fonts.body,
-              fontSize: 36,
+              fontSize: vertical ? 44 : 36,
               lineHeight: 1.45,
               color: colors.slate300,
             }}
@@ -315,16 +330,19 @@ export function StepLayout({
       <div
         style={{
           position: "absolute",
-          right: 120,
-          top: 150,
-          width: 900,
-          height: 680,
+          right: vertical ? 0 : 120,
+          top: vertical ? 720 : 150,
+          width: vertical ? 1080 : 900,
+          height: vertical ? 700 : 680,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        {children}
+        {/* En móvil las ilustraciones se amplían para leerse mejor. */}
+        <div style={{ transform: vertical ? "scale(1.12)" : undefined }}>
+          {children}
+        </div>
       </div>
       <ProgressRail active={index} />
     </AbsoluteFill>

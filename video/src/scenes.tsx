@@ -25,6 +25,7 @@ import {
   Reveal,
   StepLayout,
   useEnter,
+  useVertical,
 } from "./ui";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -45,6 +46,7 @@ function Logo({ size }: { size: number }) {
 
 export function IntroScene() {
   const pop = useEnter(0, { damping: 14, stiffness: 120 });
+  const vertical = useVertical();
   return (
     <AbsoluteFill>
       <Background />
@@ -83,9 +85,10 @@ export function IntroScene() {
               margin: "34px 0 0",
               fontFamily: fonts.heading,
               fontWeight: 700,
-              fontSize: 128,
+              fontSize: vertical ? 116 : 128,
               lineHeight: 1,
               letterSpacing: -4,
+              padding: vertical ? "0 70px" : 0,
               textTransform: "uppercase",
               ...gradientText,
             }}
@@ -673,6 +676,7 @@ export function LanzamientoScene() {
 
 export function CierreScene() {
   const pop = useEnter(0, { damping: 14, stiffness: 120 });
+  const vertical = useVertical();
   return (
     <AbsoluteFill>
       <Background />
@@ -692,7 +696,7 @@ export function CierreScene() {
               margin: "40px 0 0",
               fontFamily: fonts.heading,
               fontWeight: 700,
-              fontSize: 104,
+              fontSize: vertical ? 86 : 104,
               lineHeight: 1.05,
               letterSpacing: -3,
               textTransform: "uppercase",
