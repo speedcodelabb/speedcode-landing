@@ -45,7 +45,7 @@ Crear dos proyectos separados, staging y producción. En ambos:
 
 1. Aplicar, en orden, los archivos de `supabase/migrations` con Supabase CLI.
 2. Configurar las variables locales del proyecto y ejecutar `pnpm db:seed`. La semilla se niega a correr si `site_content` ya tiene contenido, para no pisar la web publicada.
-3. En Authentication > Providers > Email desactivar `Allow new users to sign up`.
+3. En Authentication > Sign In / Providers desactivar `Allow new users to sign up` y dejar **activado** el proveedor Email (sin él nadie puede iniciar sesión). Con la CLI: `[auth] enable_signup = false` y `[auth.email] enable_signup = true` en un `config.toml` con la URL real del entorno, aplicado con `supabase config push --project-ref <ref>`.
 4. Crear el usuario administrador manualmente en Authentication > Users.
 5. Copiar su UUID a `ADMIN_USER_ID` y ejecutar `pnpm db:add-admin` con service role.
 6. Comprobar que el bucket público `site-media` fue creado con límite de 5 MB y solo acepta JPEG, PNG, WebP y AVIF.

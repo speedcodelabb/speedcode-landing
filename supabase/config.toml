@@ -42,6 +42,9 @@ minimum_password_length = 10
 password_requirements = "lower_upper_letters_digits_symbols"
 
 [auth.email]
-enable_signup = false
+# Activa el proveedor de email (login con contraseña). En proyectos alojados,
+# false lo desactiva por completo y nadie puede entrar al panel. El registro de
+# usuarios queda bloqueado por [auth] enable_signup = false.
+enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
