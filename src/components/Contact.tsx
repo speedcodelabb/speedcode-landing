@@ -106,14 +106,16 @@ export default function Contact({
         "Consulta registrada. También abrimos WhatsApp para continuar la conversación.",
       );
       formElement.reset();
-      setTurnstileToken("");
-      if (widgetId.current && window.turnstile)
-        window.turnstile.reset(widgetId.current);
     } catch (caught) {
       setStatus("warning");
       setMessage(
         `${caught instanceof Error ? caught.message : "No se pudo registrar la consulta."} WhatsApp sigue disponible para contactarnos.`,
       );
+    } finally {
+      // Cloudflare invalida el token al verificarlo: cada intento necesita uno nuevo.
+      setTurnstileToken("");
+      if (widgetId.current && window.turnstile)
+        window.turnstile.reset(widgetId.current);
     }
   }
 

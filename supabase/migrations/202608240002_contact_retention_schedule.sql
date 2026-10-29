@@ -1,4 +1,8 @@
-create extension if not exists pg_cron with schema extensions;
+-- El archivo de control de pg_cron fija su esquema: solo se instala en pg_catalog.
+create extension if not exists pg_cron with schema pg_catalog;
+
+grant usage on schema cron to postgres;
+grant all privileges on all tables in schema cron to postgres;
 
 do $$
 declare existing_job bigint;

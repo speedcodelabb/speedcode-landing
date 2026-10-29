@@ -1,6 +1,12 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import handler from "./contact";
+
+// Vercel ejecuta las funciones como ESM nativo: los imports relativos necesitan extensión.
+const relativeImport =
+  /^\s*(?:import|export)\s+(?!type\s)[^;]*?\sfrom\s+["'](\.{1,2}\/[^"']+)["']/gm;
 
 const environmentKeys = [
   "SUPABASE_URL",
@@ -41,6 +47,26 @@ function responseMock() {
     },
   };
   return { state, response: response as unknown as VercelResponse };
+}
+
+function configureServer() {
+  process.env.SUPABASE_URL = "https://example.supabase.co";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "local-service-key";
+  process.env.TURNSTILE_SECRET_KEY = "local-turnstile-secret";
+  process.env.RATE_LIMIT_HASH_SECRET = "local-hash-secret";
+}
+
+function contactRequest(body: Record<string, unknown>) {
+  return {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      origin: "https://speedcodelab.com",
+      host: "speedcodelab.com",
+      "x-forwarded-for": "192.0.2.1",
+    },
+    body,
+  } as unknown as VercelRequest;
 }
 
 afterEach(() => {
@@ -85,10 +111,7 @@ describe("POST /api/contact", () => {
   });
 
   it("rechaza un token Turnstile inválido antes de escribir datos", async () => {
-    process.env.SUPABASE_URL = "https://example.supabase.co";
-    process.env.SUPABASE_SERVICE_ROLE_KEY = "local-service-key";
-    process.env.TURNSTILE_SECRET_KEY = "local-turnstile-secret";
-    process.env.RATE_LIMIT_HASH_SECRET = "local-hash-secret";
+    configureServer();
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -98,22 +121,13 @@ describe("POST /api/contact", () => {
     );
     const { state, response } = responseMock();
     await handler(
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          origin: "https://speedcodelab.com",
-          host: "speedcodelab.com",
-          "x-forwarded-for": "192.0.2.1",
-        },
-        body: {
-          name: "Ada",
-          email: "ada@example.com",
-          projectTypeId: "web-development",
-          message: "Necesito una nueva landing.",
-          turnstileToken: "invalid-token",
-        },
-      } as unknown as VercelRequest,
+      contactRequest({
+        name: "Ada",
+        email: "ada@example.com",
+        projectTypeId: "web-development",
+        message: "Necesito una nueva landing.",
+        turnstileToken: "invalid-token",
+      }),
       response,
     );
     expect(state.status).toBe(400);
@@ -121,5 +135,43 @@ describe("POST /api/contact", () => {
       success: false,
       code: "turnstile_invalid",
     });
+  });
+
+  it("valida los campos antes de consumir el token Turnstile", async () => {
+    configureServer();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const { state, response } = responseMock();
+    await handler(
+      contactRequest({
+        name: "Ada",
+        email: "ada@example.com",
+        projectTypeId: "web-development",
+        message: "Hola",
+        turnstileToken: "valid-token",
+      }),
+      response,
+    );
+    expect(state.status).toBe(400);
+    expect(state.body).toMatchObject({
+      success: false,
+      code: "invalid_fields",
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("funciones de Vercel", () => {
+  it("importan los módulos locales con extensión .js", () => {
+    const apiDirectory = join(process.cwd(), "api");
+    const extensionless: string[] = [];
+    for (const file of readdirSync(apiDirectory)) {
+      if (!file.endsWith(".ts") || file.endsWith(".test.ts")) continue;
+      const source = readFileSync(join(apiDirectory, file), "utf8");
+      for (const [, specifier] of source.matchAll(relativeImport))
+        if (!specifier.endsWith(".js"))
+          extensionless.push(`${file}: ${specifier}`);
+    }
+    expect(extensionless).toEqual([]);
   });
 });

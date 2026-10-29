@@ -58,7 +58,10 @@ Para validar localmente:
 supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
 supabase db reset
 supabase db lint --local --fail-on warning
+supabase test db
 ```
+
+`supabase test db` ejecuta los tests pgTAP de `supabase/tests`, que verifican que ninguna función `SECURITY DEFINER` sea invocable por `anon`.
 
 ## Acceso administrativo
 
@@ -99,7 +102,7 @@ pnpm audit --prod --audit-level high
 pnpm test:e2e
 ```
 
-La CI repite estas verificaciones, valida las migraciones en Supabase local, ejecuta Gitleaks y lanza Playwright contra deployments Preview. El gate de dependencias admite cero vulnerabilidades altas o críticas de producción.
+La CI repite estas verificaciones, valida las migraciones y sus permisos (pgTAP) en Supabase local, ejecuta Gitleaks y lanza Playwright contra deployments Preview. El gate de dependencias admite cero vulnerabilidades altas o críticas de producción.
 
 Para que Preview pruebe también el login Supabase y la navegación administrativa, configurar en GitHub Actions `PREVIEW_ADMIN_GATE_USER`, `PREVIEW_ADMIN_GATE_PASSWORD`, `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD`. La cuenta E2E debe existir únicamente en staging y estar allowlisted.
 

@@ -45,6 +45,7 @@ jobs:
         run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
       - run: supabase db reset
       - run: supabase db lint --local --fail-on warning
+      - run: supabase test db
 
   preview-e2e:
     if: github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview'

@@ -1,7 +1,7 @@
 import { createHmac } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { siteDocumentSchema } from "../src/lib/siteContent";
+import { siteDocumentSchema } from "../src/lib/siteContent.js";
 
 type ContactRequest = {
   name?: unknown;
@@ -100,6 +100,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch {
     return fail(res, 400, "invalid_json", "El JSON no es válido.");
   }
+  // Validar antes de verificar Turnstile: el token es de un solo uso y el
+  // rate limit se consume después.
+  const name = text(body?.name, 100);
+  const email = text(body?.email, 200).toLowerCase();
+  const projectTypeId = text(body?.projectTypeId, 100);
+  const message = text(body?.message, 2000);
+  if (!name || !email || !projectTypeId || message.length < 10)
+    return fail(res, 400, "invalid_fields", "Revisá los campos obligatorios.");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    return fail(res, 400, "invalid_email", "Ingresá un email válido.");
   const turnstileToken = text(body?.turnstileToken, 4096);
   if (!turnstileToken)
     return fail(
@@ -172,15 +182,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       "rate_limited",
       "Alcanzaste el límite de consultas. Intentá nuevamente en 15 minutos.",
     );
-
-  const name = text(body?.name, 100);
-  const email = text(body?.email, 200).toLowerCase();
-  const projectTypeId = text(body?.projectTypeId, 100);
-  const message = text(body?.message, 2000);
-  if (!name || !email || !projectTypeId || message.length < 10)
-    return fail(res, 400, "invalid_fields", "Revisá los campos obligatorios.");
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    return fail(res, 400, "invalid_email", "Ingresá un email válido.");
 
   const { data: published, error: contentError } = await api
     .from("site_content")
