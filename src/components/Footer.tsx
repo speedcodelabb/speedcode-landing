@@ -63,7 +63,7 @@ export default function Footer({
           </div>
         </div>
       </div>
-      <div className="mx-auto mt-10 flex max-w-[1240px] flex-col justify-between gap-3 border-t border-sky-300/10 pt-6 text-xs text-slate-500 md:flex-row">
+      <div className="mx-auto mt-10 flex max-w-[1240px] flex-col justify-between gap-3 border-t border-sky-300/10 pt-6 text-xs text-slate-400 md:flex-row">
         <p>
           © {new Date().getFullYear()} Speedcode Lab. Todos los derechos
           reservados.

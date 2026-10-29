@@ -43,7 +43,14 @@ export default function Contact({
       });
     };
     render();
-    const timer = window.setInterval(render, 250);
+    // Si el script de Turnstile no carga (bloqueador, red), dejar de reintentar
+    // a los 15 s; el aviso de verificación sigue visible y WhatsApp disponible.
+    let attempts = 0;
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      if (widgetId.current || attempts > 60) window.clearInterval(timer);
+      else render();
+    }, 250);
     return () => {
       cancelled = true;
       window.clearInterval(timer);
@@ -220,7 +227,11 @@ export default function Contact({
             />
           </label>
           {siteKey ? (
-            <div ref={widget} aria-label="Verificación de seguridad" />
+            <div
+              ref={widget}
+              role="group"
+              aria-label="Verificación de seguridad"
+            />
           ) : (
             <p className="admin-error">
               El formulario no está configurado en este entorno.
