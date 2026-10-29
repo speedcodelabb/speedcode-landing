@@ -114,4 +114,6 @@ Despliegue recomendado:
 4. Aplicar exactamente las mismas migraciones en producción, crear el admin real y cargar secretos productivos.
 5. Aprobar Preview, hacer squash de `ivan` hacia `main` y ejecutar smoke tests tras desplegar.
 
+El workflow `Supabase keep-alive` lee cada día el contenido publicado de staging y producción con la clave anónima (variables de repositorio `SUPABASE_*_URL` y `SUPABASE_*_ANON_KEY`), para que el plan Free no pause los proyectos tras 7 días sin actividad. Si falla, revisar el estado del proyecto en Supabase.
+
 Ante una falla de aplicación, restaurar el deployment anterior en Vercel. Ante contenido incorrecto, restaurar la versión anterior desde el panel y publicarla. Las migraciones deben seguir siendo aditivas; no ejecutar rollbacks destructivos en producción.
