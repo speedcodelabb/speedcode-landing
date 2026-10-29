@@ -3,6 +3,7 @@ node_modules/
 .playwright-browsers/
 playwright-report/
 test-results/
+e2e/.auth/
 supabase/.branches/
 supabase/.temp/
 build/
