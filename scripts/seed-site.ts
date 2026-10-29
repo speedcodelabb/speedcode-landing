@@ -9,6 +9,19 @@ if (!url || !serviceRoleKey)
 const supabase = createClient(url, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
+// La semilla es de un solo uso: re-ejecutarla pisaría la web publicada y el
+// borrador. Solo continúa si el proyecto todavía no tiene contenido.
+const { data: existing, error: existingError } = await supabase
+  .from("site_content")
+  .select("version")
+  .eq("id", 1)
+  .maybeSingle();
+if (existingError) throw existingError;
+if (existing)
+  throw new Error(
+    `El proyecto ya tiene contenido publicado (versión ${existing.version}). La semilla no se vuelve a aplicar; usá el panel para editar o restaurar.`,
+  );
+
 const now = new Date().toISOString();
 const { error: contentError } = await supabase.from("site_content").upsert({
   id: 1,
