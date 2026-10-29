@@ -85,6 +85,21 @@ El formulario abre WhatsApp durante el gesto del usuario y, en paralelo, llama `
 
 En Cloudflare Turnstile registrar el dominio productivo y los dominios Preview necesarios. En Resend verificar el dominio usado por `RESEND_FROM`. Staging nunca debe usar el destinatario productivo.
 
+## Vídeo del proceso
+
+La sección "Cómo trabajamos" muestra `public/video/proceso.mp4` (2560×1440, H.264, con música de fondo) con su póster `public/video/proceso-poster.jpg`. Se reproduce en silencio solo mientras está a la vista y nunca automáticamente con `prefers-reduced-motion`.
+
+La fuente es un proyecto Remotion independiente en `video/`, con sus propias dependencias (no forman parte del build de la web):
+
+```bash
+cd video
+pnpm install --ignore-workspace
+pnpm studio   # editar y previsualizar
+pnpm build    # renderiza el MP4 y el póster en ../public/video
+```
+
+Las escenas y su duración están en `video/src/guion.ts`. La música de fondo es "Technology Corporate" de The Mountain (Pixabay, licencia de uso comercial sin atribución). El MP3 no se versiona porque la licencia no permite distribuirlo como archivo suelto: para volver a renderizar, descargarlo de Pixabay, recortar los primeros 40 s y guardarlo como `video/public/musica/fondo.mp3`. Sin ese archivo el vídeo sale sin audio. Remotion es gratuito para empresas de hasta tres personas; por encima requiere licencia de empresa.
+
 ## CSP y Vercel
 
 `vercel.json` permite Supabase Storage/API y Turnstile. La CSP enumera los dos proyectos Supabase exactos: staging (`qrhrgswtephdhvduywnm`) y producción (`htwixdjjlvithjmfwyiw`). Si se cambia de proyecto, hay que actualizar `img-src` y `connect-src`.

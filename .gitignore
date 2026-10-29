@@ -18,3 +18,9 @@ coverage/
 venv
 unificar.py
 contexto_completo.txt
+
+# Vídeo: borradores locales y salidas de Remotion
+video/borradores/
+video/out/
+video/grabaciones/
+video/public/musica/

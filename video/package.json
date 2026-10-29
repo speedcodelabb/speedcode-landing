@@ -1,0 +1,31 @@
+{
+  "name": "speedcode-landing-video",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Fuente Remotion del vídeo de proceso de la landing. El MP4 renderizado se publica en ../public/video.",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Proceso ../public/video/proceso.mp4 --codec=h264 --crf=18 --x264-preset=slow --pixel-format=yuv420p --color-space=bt709",
+    "poster": "remotion still src/index.ts Proceso ../public/video/proceso-poster.jpg --frame=80 --image-format=jpeg --jpeg-quality=88",
+    "build": "pnpm render && pnpm poster",
+    "typecheck": "tsc --noEmit",
+    "reel": "remotion render src/index.ts ProcesoReel borradores/instagram/reel-proceso.mp4 --codec=h264 --crf=17 --x264-preset=slow --pixel-format=yuv420p --color-space=bt709 --audio-bitrate=256k",
+    "reel-portada": "remotion still src/index.ts ProcesoReel borradores/instagram/reel-portada.jpg --frame=80 --image-format=jpeg --jpeg-quality=92"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.539",
+    "@remotion/google-fonts": "4.0.539",
+    "@remotion/media": "4.0.539",
+    "@remotion/transitions": "4.0.539",
+    "lucide-react": "0.546.0",
+    "mediabunny": "1.62.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.539"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.8.3"
+  }
+}
