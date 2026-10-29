@@ -22,6 +22,8 @@ export default function Contact({
   const widget = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState("");
+  // Turnstile verifica en segundo plano; solo se muestra si pide interacción.
+  const [challengeVisible, setChallengeVisible] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "sending" | "success" | "warning" | "error"
   >("idle");
@@ -37,7 +39,10 @@ export default function Contact({
       widgetId.current = window.turnstile.render(widget.current, {
         sitekey: siteKey,
         theme: "dark",
+        appearance: "interaction-only",
         callback: setTurnstileToken,
+        "before-interactive-callback": () => setChallengeVisible(true),
+        "after-interactive-callback": () => setChallengeVisible(false),
         "expired-callback": () => setTurnstileToken(""),
         "error-callback": () => setTurnstileToken(""),
       });
@@ -67,9 +72,18 @@ export default function Contact({
     const email = String(form.get("email") ?? "").trim();
     const projectTypeId = String(form.get("projectTypeId") ?? "");
     const userMessage = String(form.get("message") ?? "").trim();
-    if (!siteKey || !turnstileToken) {
+    if (!siteKey) {
       setStatus("error");
-      setMessage("Completá la verificación de seguridad antes de enviar.");
+      setMessage("El formulario no está disponible en este momento.");
+      return;
+    }
+    if (!turnstileToken) {
+      setStatus("error");
+      setMessage(
+        challengeVisible
+          ? "Completá la verificación de seguridad antes de enviar."
+          : "Estamos verificando la conexión. Probá enviar de nuevo en unos segundos.",
+      );
       return;
     }
     if (!name || !email || !projectTypeId || !userMessage) {
@@ -231,6 +245,11 @@ export default function Contact({
               ref={widget}
               role="group"
               aria-label="Verificación de seguridad"
+              // Mientras Turnstile es invisible, el contenedor no ocupa espacio
+              // ni deja el hueco de la grilla.
+              className={
+                challengeVisible ? undefined : "-mt-4 h-0 overflow-hidden"
+              }
             />
           ) : (
             <p className="admin-error">
