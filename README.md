@@ -87,7 +87,7 @@ En Cloudflare Turnstile registrar el dominio productivo y los dominios Preview n
 
 ## CSP y Vercel
 
-`vercel.json` permite Supabase Storage/API y Turnstile. Como los proyectos Supabase todavía deben crearse, contiene temporalmente `https://*.supabase.co`. Antes del lanzamiento se deben reemplazar ambos comodines por los dos hosts exactos de staging/producción y probar el navegador sin violaciones CSP.
+`vercel.json` permite Supabase Storage/API y Turnstile. La CSP enumera los dos proyectos Supabase exactos: staging (`qrhrgswtephdhvduywnm`) y producción (`htwixdjjlvithjmfwyiw`). Si se cambia de proyecto, hay que actualizar `img-src` y `connect-src`.
 
 Configurar Node `24.x` y pnpm desde `package.json`. Aplicar todos los secretos por entorno. El middleware depende del runtime de Vercel; no confiar en `vite preview` para validar HTTP Basic.
 
