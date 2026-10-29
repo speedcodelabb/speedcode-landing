@@ -30,5 +30,5 @@ export const TRANSITION_FRAMES = 15;
  * entrada y salida suaves; si no, el vídeo se renderiza sin audio.
  */
 export const MUSIC_PATH = "musica/fondo.mp3";
-export const MUSIC_VOLUME = 0.7;
+export const MUSIC_VOLUME = 1;
 export const MUSIC_FADE_SECONDS = 1.5;

@@ -87,7 +87,7 @@ En Cloudflare Turnstile registrar el dominio productivo y los dominios Preview n
 
 ## Vídeo del proceso
 
-La sección "Cómo trabajamos" muestra `public/video/proceso.mp4` (2560×1440, H.264, sin audio) con su póster `public/video/proceso-poster.jpg`. Se reproduce en silencio solo mientras está a la vista y nunca automáticamente con `prefers-reduced-motion`.
+La sección "Cómo trabajamos" muestra `public/video/proceso.mp4` (2560×1440, H.264, con música de fondo) con su póster `public/video/proceso-poster.jpg`. Se reproduce en silencio solo mientras está a la vista y nunca automáticamente con `prefers-reduced-motion`.
 
 La fuente es un proyecto Remotion independiente en `video/`, con sus propias dependencias (no forman parte del build de la web):
 
@@ -98,7 +98,7 @@ pnpm studio   # editar y previsualizar
 pnpm build    # renderiza el MP4 y el póster en ../public/video
 ```
 
-Las escenas y su duración están en `video/src/guion.ts`. Para añadir música de fondo, copiar un tema con licencia de uso comercial a `video/public/musica/fondo.mp3` y volver a ejecutar `pnpm build`: se incluye con entrada y salida suaves. Remotion es gratuito para empresas de hasta tres personas; por encima requiere licencia de empresa.
+Las escenas y su duración están en `video/src/guion.ts`. La música de fondo es "Technology Corporate" de The Mountain (Pixabay, licencia de uso comercial sin atribución). El MP3 no se versiona porque la licencia no permite distribuirlo como archivo suelto: para volver a renderizar, descargarlo de Pixabay, recortar los primeros 40 s y guardarlo como `video/public/musica/fondo.mp3`. Sin ese archivo el vídeo sale sin audio. Remotion es gratuito para empresas de hasta tres personas; por encima requiere licencia de empresa.
 
 ## CSP y Vercel
 

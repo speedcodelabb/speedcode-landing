@@ -88,8 +88,8 @@ export default function ProcessVideo() {
         />
       </div>
       <p id="proceso-descripcion" className="sr-only">
-        Vídeo sin sonido de 38 segundos que muestra las etapas de un proyecto
-        web en Speedcode Lab: {STEPS.join(", ")}.
+        Vídeo de 38 segundos con música de fondo, sin narración, que muestra las
+        etapas de un proyecto web en Speedcode Lab: {STEPS.join(", ")}.
       </p>
     </section>
   );
