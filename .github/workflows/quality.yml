@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: read
+  # gitleaks-action lista los commits del PR en eventos pull_request.
+  pull-requests: read
 
 jobs:
   quality:

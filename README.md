@@ -44,13 +44,13 @@ Nunca se debe usar el prefijo `VITE_` en claves privadas. En Vercel deben existi
 Crear dos proyectos separados, staging y producción. En ambos:
 
 1. Aplicar, en orden, los archivos de `supabase/migrations` con Supabase CLI.
-2. Configurar las variables locales del proyecto y ejecutar `pnpm db:seed` una sola vez.
+2. Configurar las variables locales del proyecto y ejecutar `pnpm db:seed`. La semilla se niega a correr si `site_content` ya tiene contenido, para no pisar la web publicada.
 3. En Authentication > Providers > Email desactivar `Allow new users to sign up`.
 4. Crear el usuario administrador manualmente en Authentication > Users.
 5. Copiar su UUID a `ADMIN_USER_ID` y ejecutar `pnpm db:add-admin` con service role.
 6. Comprobar que el bucket público `site-media` fue creado con límite de 5 MB y solo acepta JPEG, PNG, WebP y AVIF.
 
-Las migraciones crean RLS, funciones con `search_path` fijo, permisos mínimos, publicación atómica, historial de 20 versiones, rate limiting persistente y limpieza diaria de leads archivados con más de 180 días. El rol anónimo solo puede leer `site_content` y media pública; autenticarse no otorga permisos administrativos sin una fila activa en `admin_users`.
+Las migraciones crean RLS, funciones con `search_path` fijo, permisos mínimos, publicación atómica con validación mínima del documento en el servidor, historial de 20 versiones, rate limiting persistente y limpieza diaria de leads archivados con más de 180 días. El rol anónimo solo puede leer `site_content` y media pública; autenticarse no otorga permisos administrativos sin una fila activa en `admin_users`.
 
 Para validar localmente:
 
@@ -61,7 +61,7 @@ supabase db lint --local --fail-on warning
 supabase test db
 ```
 
-`supabase test db` ejecuta los tests pgTAP de `supabase/tests`, que verifican que ninguna función `SECURITY DEFINER` sea invocable por `anon`.
+`supabase test db` ejecuta los tests pgTAP de `supabase/tests`: permisos de las funciones `SECURITY DEFINER`, RLS por rol y el ciclo guardar, publicar y restaurar.
 
 ## Acceso administrativo
 
@@ -104,7 +104,7 @@ pnpm test:e2e
 
 La CI repite estas verificaciones, valida las migraciones y sus permisos (pgTAP) en Supabase local, ejecuta Gitleaks y lanza Playwright contra deployments Preview. El gate de dependencias admite cero vulnerabilidades altas o críticas de producción.
 
-Para que Preview pruebe también el login Supabase y la navegación administrativa, configurar en GitHub Actions `PREVIEW_ADMIN_GATE_USER`, `PREVIEW_ADMIN_GATE_PASSWORD`, `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD`. La cuenta E2E debe existir únicamente en staging y estar allowlisted.
+Los Preview están detrás de Vercel Deployment Protection: configurar en GitHub Actions `VERCEL_AUTOMATION_BYPASS_SECRET` (Vercel > Settings > Deployment Protection > Protection Bypass for Automation) para que Playwright reciba la aplicación y no la página de acceso de Vercel. Para que Preview pruebe también el login Supabase y la navegación administrativa, configurar además `PREVIEW_ADMIN_GATE_USER`, `PREVIEW_ADMIN_GATE_PASSWORD`, `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD`. La cuenta E2E debe existir únicamente en staging y estar allowlisted.
 
 Despliegue recomendado:
 
