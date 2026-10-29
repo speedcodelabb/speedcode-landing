@@ -4,3 +4,5 @@ dist/
 coverage/
 playwright-report/
 test-results/
+# Verificación de Google Search Console: el contenido debe quedar exacto.
+public/google*.html
