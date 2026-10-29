@@ -85,7 +85,7 @@ export default function Navbar({
           <a
             href={defaultWhatsappUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-black text-[#041022]"
           >
             {content.navigation.whatsapp}
@@ -96,11 +96,11 @@ export default function Navbar({
           <a
             href={defaultWhatsappUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             aria-label={content.navigation.whatsapp}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#041022]"
+            className="inline-flex h-12 shrink-0 items-center justify-center rounded-full bg-white px-3 text-xs font-black text-[#041022]"
           >
-            <MessageCircle className="h-5 w-5" />
+            {content.navigation.whatsapp}
           </a>
           <button
             type="button"

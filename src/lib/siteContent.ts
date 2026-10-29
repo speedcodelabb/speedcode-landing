@@ -28,6 +28,68 @@ const optionalHttpsUrl = z.union([
     .refine((value) => value.startsWith("https://"), "La URL debe usar HTTPS"),
 ]);
 
+const defaultResponsePromise =
+  "Respondemos el mismo día en horario de atención, muchas veces en minutos.";
+const defaultSchedule =
+  "Lunes a sábado de 8:00 a 20:00 · Domingos de 14:00 a 19:00";
+const defaultCity = "Asunción, Paraguay";
+const defaultContactPaths = [
+  {
+    id: "web",
+    title: "Quiero una web que venda",
+    description: "Landing, sitio corporativo o tienda.",
+    cta: "Hablemos de tu web",
+    whatsappMessage:
+      "Hola Speedcode Lab, quiero una web para mi negocio. ¿Cómo arrancamos?",
+  },
+  {
+    id: "sistema",
+    title: "Necesito un sistema a medida",
+    description: "Gestión, stock, caja y paneles para tu empresa.",
+    cta: "Contanos qué necesitás",
+    whatsappMessage:
+      "Hola Speedcode Lab, necesito un sistema a medida para mi empresa. ¿Podemos hablar?",
+  },
+  {
+    id: "automatizacion",
+    title: "Quiero automatizar procesos",
+    description: "WhatsApp, reportes e integraciones.",
+    cta: "Veamos qué automatizar",
+    whatsappMessage:
+      "Hola Speedcode Lab, quiero automatizar procesos de mi negocio. ¿Qué opciones hay?",
+  },
+];
+const defaultCommitments = {
+  eyebrow: "Nuestros compromisos",
+  title: "Claridad desde el primer día",
+  items: [
+    {
+      id: "respuesta",
+      icon: "rocket" as const,
+      title: "Respuesta el mismo día",
+      body: defaultResponsePromise,
+    },
+    {
+      id: "pagos",
+      icon: "layers" as const,
+      title: "Pagos flexibles",
+      body: "Pagá por hitos o en 3, 6 o más cuotas mensuales, según el tamaño del proyecto.",
+    },
+    {
+      id: "dominio",
+      icon: "code" as const,
+      title: "El dominio que elijas",
+      body: "Gestionamos el dominio con el nombre que elijas. Hosting y servicios de terceros van aparte; podemos gestionarlos con un mantenimiento mensual opcional.",
+    },
+    {
+      id: "soporte",
+      icon: "support" as const,
+      title: "3 meses de soporte incluidos",
+      body: "Te acompañamos durante los primeros 3 meses después del lanzamiento.",
+    },
+  ],
+};
+
 export const siteDocumentSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -68,11 +130,30 @@ export const siteDocumentSchema = z
             title: requiredText,
             body: requiredText,
             proof: requiredText,
+            whatsappMessage: z.string().trim().default(""),
           }),
         )
         .min(1)
         .max(16),
     }),
+    commitments: z
+      .object({
+        eyebrow: requiredText.default(defaultCommitments.eyebrow),
+        title: requiredText.default(defaultCommitments.title),
+        items: z
+          .array(
+            z.object({
+              id: requiredText.default(defaultCommitments.items[0].id),
+              icon: iconKeySchema.default(defaultCommitments.items[0].icon),
+              title: requiredText.default(defaultCommitments.items[0].title),
+              body: requiredText.default(defaultCommitments.items[0].body),
+            }),
+          )
+          .min(1)
+          .max(6)
+          .default(defaultCommitments.items),
+      })
+      .default(defaultCommitments),
     about: z.object({
       title: requiredText,
       highlight: requiredText,
@@ -141,6 +222,26 @@ export const siteDocumentSchema = z
       phoneLabel: requiredText,
       whatsappNumber: z.string().regex(/^\d{8,18}$/),
       directWhatsappLabel: requiredText,
+      responsePromise: requiredText.default(defaultResponsePromise),
+      schedule: requiredText.default(defaultSchedule),
+      city: requiredText.default(defaultCity),
+      paths: z
+        .array(
+          z.object({
+            id: requiredText.default(defaultContactPaths[0].id),
+            title: requiredText.default(defaultContactPaths[0].title),
+            description: requiredText.default(
+              defaultContactPaths[0].description,
+            ),
+            cta: requiredText.default(defaultContactPaths[0].cta),
+            whatsappMessage: requiredText.default(
+              defaultContactPaths[0].whatsappMessage,
+            ),
+          }),
+        )
+        .min(1)
+        .max(4)
+        .default(defaultContactPaths),
       nextStepsTitle: requiredText,
       nextSteps: z
         .array(z.object({ id: requiredText, text: requiredText }))
@@ -167,12 +268,14 @@ export const siteDocumentSchema = z
     const collections = [
       document.hero.stats,
       document.services.items,
+      document.commitments.items,
       document.about.steps,
       document.values.items,
       document.portfolio.items,
       document.faq.items,
       document.contact.nextSteps,
       document.contact.projectTypes,
+      document.contact.paths,
     ];
     for (const collection of collections) {
       if (new Set(collection.map((item) => item.id)).size !== collection.length)
@@ -207,7 +310,7 @@ export const defaultSiteDocument: SiteDocument = {
     services: "Servicios",
     portfolio: "Portafolio",
     contact: "Contacto",
-    whatsapp: "WhatsApp",
+    whatsapp: "Pedir presupuesto",
   },
   hero: {
     eyebrow: "Desarrollo web, software y automatización",
@@ -239,6 +342,7 @@ export const defaultSiteDocument: SiteDocument = {
         title: "Automatización",
         body: "Flujos inteligentes para responder clientes potenciales, conectar herramientas y reducir trabajo manual repetitivo.",
         proof: "Menos tareas repetidas",
+        whatsappMessage: "",
       },
       {
         id: "desarrollo-web",
@@ -246,6 +350,7 @@ export const defaultSiteDocument: SiteDocument = {
         title: "Desarrollo Web",
         body: "Páginas de aterrizaje y sitios corporativos con diseño premium, texto claro y velocidad lista para convertir.",
         proof: "Base comercial sólida",
+        whatsappMessage: "",
       },
       {
         id: "apps-escritorio",
@@ -253,6 +358,7 @@ export const defaultSiteDocument: SiteDocument = {
         title: "Apps de Escritorio",
         body: "Aplicaciones internas para operaciones, inventario, reportes y procesos que necesitan estabilidad local.",
         proof: "Herramientas internas",
+        whatsappMessage: "",
       },
       {
         id: "analisis-datos",
@@ -260,6 +366,7 @@ export const defaultSiteDocument: SiteDocument = {
         title: "Análisis de Datos",
         body: "Dashboards, métricas y reportes claros para tomar decisiones con información real del negocio.",
         proof: "Decisiones medibles",
+        whatsappMessage: "",
       },
       {
         id: "consultoria-tecnologica",
@@ -267,6 +374,7 @@ export const defaultSiteDocument: SiteDocument = {
         title: "Consultoría Tecnológica",
         body: "Diagnóstico, arquitectura y plan técnico para elegir bien antes de invertir tiempo y presupuesto.",
         proof: "Ruta técnica clara",
+        whatsappMessage: "",
       },
       {
         id: "productos-saas",
@@ -274,6 +382,7 @@ export const defaultSiteDocument: SiteDocument = {
         title: "Productos SaaS",
         body: "MVPs y plataformas listas para usuarios, pagos, paneles, roles y crecimiento progresivo.",
         proof: "Producto escalable",
+        whatsappMessage: "",
       },
       {
         id: "soporte-mantenimiento",
@@ -281,6 +390,7 @@ export const defaultSiteDocument: SiteDocument = {
         title: "Soporte y Mantenimiento",
         body: "Mejoras, monitoreo, correcciones y soporte continuo para que tu producto siga funcionando bien.",
         proof: "Continuidad operativa",
+        whatsappMessage: "",
       },
       {
         id: "proyecto-medida",
@@ -288,9 +398,11 @@ export const defaultSiteDocument: SiteDocument = {
         title: "Proyecto a Medida",
         body: "Si tu necesidad combina web, datos, automatización o soporte, armamos un alcance específico.",
         proof: "Alcance flexible",
+        whatsappMessage: "",
       },
     ],
   },
+  commitments: structuredClone(defaultCommitments),
   about: {
     title: "Sobre nuestro",
     highlight: "laboratorio",
@@ -431,6 +543,10 @@ export const defaultSiteDocument: SiteDocument = {
     phoneLabel: "0994 381 638",
     whatsappNumber: "595994381638",
     directWhatsappLabel: "WhatsApp directo",
+    responsePromise: defaultResponsePromise,
+    schedule: defaultSchedule,
+    city: defaultCity,
+    paths: structuredClone(defaultContactPaths),
     nextStepsTitle: "Qué pasa después",
     nextSteps: [
       {
@@ -510,3 +626,13 @@ export function getWhatsappUrl(
 ): string {
   return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
+
+export function getServiceWhatsappMessage(item: ServiceItem): string {
+  return (
+    item.whatsappMessage.trim() ||
+    `Hola Speedcode Lab, quiero consultar por ${item.title}.`
+  );
+}
+
+export const BUDGET_WHATSAPP_MESSAGE =
+  "Hola Speedcode Lab, quiero pedir un presupuesto.";

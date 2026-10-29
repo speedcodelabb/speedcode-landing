@@ -61,6 +61,31 @@ function renderContactForm() {
 }
 
 describe("Contact", () => {
+  it("cada camino abre WhatsApp con su mensaje y el formulario enlaza a privacidad", () => {
+    renderContactForm();
+    for (const path of defaultSiteDocument.contact.paths) {
+      const link = screen.getByRole("link", { name: new RegExp(path.title) });
+      expect(link).toHaveAttribute(
+        "href",
+        `https://wa.me/${defaultSiteDocument.contact.whatsappNumber}?text=${encodeURIComponent(path.whatsappMessage)}`,
+      );
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    }
+    expect(
+      screen.getByRole("link", { name: "política de privacidad" }),
+    ).toHaveAttribute("href", "/privacidad");
+    expect(
+      screen.getByText(defaultSiteDocument.contact.city),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(defaultSiteDocument.contact.schedule),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(defaultSiteDocument.contact.responsePromise),
+    ).toBeInTheDocument();
+  });
+
   it("pide un token Turnstile nuevo después de un envío fallido", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,

@@ -23,6 +23,13 @@ const labels: Record<string, string> = {
   navigation: "Navegación",
   hero: "Portada",
   services: "Servicios",
+  commitments: "Compromisos",
+  responsePromise: "Promesa de respuesta",
+  schedule: "Horario de atención",
+  city: "Ciudad",
+  paths: "Caminos de contacto",
+  cta: "Texto del enlace",
+  whatsappMessage: "Mensaje de WhatsApp",
   about: "Nosotros",
   values: "Valores",
   faq: "Preguntas frecuentes",
@@ -76,6 +83,7 @@ const editableSections = [
   "navigation",
   "hero",
   "services",
+  "commitments",
   "about",
   "values",
   "faq",
@@ -278,7 +286,7 @@ function DraftPreview({ content }: { content: SiteDocument }) {
   return (
     <div className="draft-preview max-h-[72vh] overflow-auto rounded-[26px] border border-sky-300/15">
       <SiteContentProvider document={content}>
-        <Home />
+        <Home showFloatingWhatsapp={false} />
       </SiteContentProvider>
     </div>
   );

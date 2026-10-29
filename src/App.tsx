@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ADMIN_BASE_PATH } from "./config/admin";
 import { SiteContentProvider } from "./context/SiteContentContext";
 import Home from "./pages/Home";
+import Privacy from "./pages/Privacy";
 
 const AdminRouter = lazy(() => import("./pages/admin/AdminRouter"));
 
@@ -34,6 +35,7 @@ export default function App() {
               </div>
             }
           />
+          <Route path="/privacidad" element={<Privacy />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

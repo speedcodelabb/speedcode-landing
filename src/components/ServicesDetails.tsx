@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import { useSiteContent } from "../context/SiteContentContext";
 import { getServiceIcon } from "../lib/serviceIcons";
+import { getServiceWhatsappMessage, getWhatsappUrl } from "../lib/siteContent";
 
 export default function ServicesDetails() {
   const { content } = useSiteContent();
@@ -47,6 +48,18 @@ export default function ServicesDetails() {
               <span className="mt-6 w-fit rounded-full border border-sky-300/14 px-3 py-1 text-[11px] font-bold uppercase text-sky-200">
                 {service.proof}
               </span>
+              <a
+                href={getWhatsappUrl(
+                  content.contact.whatsappNumber,
+                  getServiceWhatsappMessage(service),
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Consultar por ${service.title} en WhatsApp`}
+                className="mt-4 inline-flex min-h-12 w-fit items-center font-bold text-sky-300 hover:text-sky-100"
+              >
+                Consultar
+              </a>
             </motion.article>
           );
         })}
