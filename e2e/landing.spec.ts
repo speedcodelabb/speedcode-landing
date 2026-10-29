@@ -38,3 +38,19 @@ test("prefers-reduced-motion ofrece una portada estática", async ({ page }) => 
     .evaluate((element) => getComputedStyle(element).animationName);
   expect(animationName).toBe("none");
 });
+
+test("el vídeo del proceso se muestra con póster, controles y archivo servido", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const video = page.locator("#proceso video");
+  await video.scrollIntoViewIfNeeded();
+  await expect(video).toBeVisible();
+  await expect(video).toHaveAttribute("poster", "/video/proceso-poster.jpg");
+  await expect(video).toHaveAttribute("controls", "");
+  const response = await page.request.get("/video/proceso.mp4", {
+    headers: { Range: "bytes=0-1023" },
+  });
+  expect([200, 206]).toContain(response.status());
+  expect(response.headers()["content-type"]).toContain("video/mp4");
+});

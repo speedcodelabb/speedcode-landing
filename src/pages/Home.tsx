@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import Hero from "../components/Hero";
 import Navbar from "../components/Navbar";
 import Portfolio from "../components/Portfolio";
+import ProcessVideo from "../components/ProcessVideo";
 import ServicesDetails from "../components/ServicesDetails";
 import Values from "../components/Values";
 import { useSiteContent } from "../context/SiteContentContext";
@@ -29,6 +30,7 @@ export default function Home() {
       <main className="ambient-shell relative mx-auto max-w-[1240px] px-5 py-20 md:px-8">
         <div className="section-flow-line" aria-hidden="true" />
         <ServicesDetails />
+        <ProcessVideo />
         <About />
         <Values />
         <Portfolio defaultWhatsappUrl={defaultWhatsappUrl} />
