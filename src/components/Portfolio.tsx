@@ -39,7 +39,7 @@ export default function Portfolio({
           Próximamente publicaremos nuevos proyectos.
         </p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2">
           {content.portfolio.items.map((item, index) => {
             const imageUrl = getPublicMediaUrl(item.imagePath);
             return (
@@ -48,42 +48,49 @@ export default function Portfolio({
                 initial={reduceMotion ? false : { opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="premium-card relative overflow-hidden border border-sky-300/12 bg-[#071126]/70 p-7"
+                className="premium-card group relative flex flex-col overflow-hidden border border-sky-300/12 bg-[#071126]/70"
               >
                 {imageUrl && (
-                  <img
-                    src={imageUrl}
-                    alt={item.name}
-                    loading="lazy"
-                    className="-mx-7 -mt-7 mb-6 h-40 w-[calc(100%+3.5rem)] object-cover"
-                  />
+                  <div className="relative aspect-[16/10] overflow-hidden border-b border-sky-300/10 bg-[#030918]">
+                    <img
+                      src={imageUrl}
+                      alt={`Captura de ${item.name}`}
+                      width={1600}
+                      height={1000}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                    />
+                  </div>
                 )}
-                <span className="absolute right-5 top-5 text-6xl font-black text-sky-300/5">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <p className="relative text-xs font-black uppercase text-sky-300">
-                  {item.industry}
-                </p>
-                <h3 className="relative mt-5 text-2xl font-black uppercase">
-                  {item.name}
-                </h3>
-                <p className="relative mt-5 text-3xl font-black">
-                  {item.metric}
-                </p>
-                <p className="relative mt-4 text-sm leading-7 text-slate-300">
-                  {item.result}
-                </p>
-                {item.link && (
-                  <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative mt-5 inline-flex items-center gap-2 text-sm font-black text-sky-300"
-                  >
-                    Ver proyecto
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                )}
+                <div className="relative flex flex-1 flex-col p-7">
+                  <span className="absolute right-5 top-4 text-5xl font-black text-sky-300/10">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <p className="relative text-xs font-black uppercase text-sky-300">
+                    {item.industry}
+                  </p>
+                  <h3 className="relative mt-4 text-2xl font-black uppercase">
+                    {item.name}
+                  </h3>
+                  <p className="relative mt-3 text-xl font-black text-sky-100 md:text-2xl">
+                    {item.metric}
+                  </p>
+                  <p className="relative mt-4 text-sm leading-7 text-slate-300">
+                    {item.result}
+                  </p>
+                  {item.link && (
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative mt-5 inline-flex items-center gap-2 text-sm font-black text-sky-300"
+                    >
+                      Ver proyecto
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
               </motion.article>
             );
           })}
